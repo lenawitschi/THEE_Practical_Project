@@ -1,5 +1,9 @@
-This Repository includes the Research Practical Project of Emma and Lena. 
+**THEE 2024 Research Practical**
+--------------------------------------------------------------------------------------------------------------------
+Purpose: This Repository is for the Research Practical Project of Emma and Lena. 
 
+**Introduction**
+--------------------------------------------------------------------------------------------------------------------
 Our biological Question is the following: 
 
 **Metapopulation - extinction colonization model in SLiM**

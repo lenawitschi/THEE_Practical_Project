@@ -1,0 +1,50 @@
+**Status 16.10.24**
+---
+
+**Parameters**
+
+K = Carrying capacity per subpopulation (K1 = x, K2 = y, K3 = z, etc.)
+
+N = number of subpopulations (probably 10)
+
+mutr = mutation rate (fixed, same for all subpop)
+
+recomb = recombination rate (fixed, same for all subpop), because diploid species 
+
+n0 = starting population (in subpop 1 to start, subpops 2-10 are empty)
+
+mut1 = mutation type (with dominace (0.5) and fitness (neutral))
+
+g = genomic element type (length of genomic element including mutation type and base mutation rate)
+
+e = extinction rate (same for all subpopulations) 
+
+m = migration rate (random for every individual, but fixed value -> for every subpop the same) 
+
+-> idea: change the migration rate to create different simulations 
+
+
+**Variables**
+
+ntot = number of individuals in the metapopulation 
+
+
+
+**Current thoughts and questions** 
+
+Can we inlcude a selection coefficient so that extinction rate would depend on the type of mutations in the subpopulation? 
+
+?? Assuming that in large populations, extinction rate is smaller.... ??? 
+
+
+**Task**
+
+Create parameters for K, m in R 
+
+Use a for loop to incorporate different migration rates in SLiM to create different simulations 
+
+The R output gives us a command for SLiM, the SLiM run gives us an excel table with the different mutations fixed (segregation) for the different subpopulations. (different coloumns for different m)
+
+From this we will calculate the heterozygosity with Fst to evaluate the genetic variation in the subpops. 
+
+Fst = variation of allele frequencies in the subpopulation

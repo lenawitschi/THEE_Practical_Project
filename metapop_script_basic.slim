@@ -5,7 +5,7 @@ initialize() {
 	initializeSLiMModelType("nonWF"); // means that population size can change dynamically
 	defineConstant("K", 50);     // carrying capacity per subpop
 	defineConstant("N", 10);     // number of subpopulations
-	defineConstant("m", 0.001);   // migration rate
+	defineConstant("m", 0.1);   // migration rate
 	defineConstant("e", 0.1);    // subpopulation extinction rate
 	
 	initializeMutationType("m1", 0.5, "f", 0.0); // mutation type m1 is has dominance coefficient 0.5 and is neutral (fitness 0.0)
@@ -58,5 +58,7 @@ late() { // at the end of every generation
 }
 // at time point 2000
 2000 late() {
-	sim.outputFixedMutations(); // if it survives for 2000 generations report the number of fixed mutations
+	sim.outputFull(); // if it survives for 2000 generations report the number of fixed mutations
 }
+
+// H means hermaphroditic 

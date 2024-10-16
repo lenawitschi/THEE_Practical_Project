@@ -36,6 +36,9 @@ Can we inlcude a selection coefficient so that extinction rate would depend on t
 
 ?? Assuming that in large populations, extinction rate is smaller.... ??? 
 
+Make extinction proportional to the genetic diversity in the deme 
+
+In the future, if a population faces environmental changes, a population is more probable to be rescued if the genetic variation is high 
 
 **Task**
 

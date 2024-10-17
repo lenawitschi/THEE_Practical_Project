@@ -34,11 +34,10 @@ ntot = number of individuals in the metapopulation
 
 Can we inlcude a selection coefficient so that extinction rate would depend on the type of mutations in the subpopulation? 
 
-?? Assuming that in large populations, extinction rate is smaller.... ??? 
-
-Make extinction proportional to the genetic diversity in the deme 
+?? Assuming that in large populations, extinction rate is smaller.... ??? => Make extinction proportional to the genetic diversity in the deme 
 
 In the future, if a population faces environmental changes, a population is more probable to be rescued if the genetic variation is high 
+
 
 **Task**
 
@@ -51,3 +50,10 @@ The R output gives us a command for SLiM, the SLiM run gives us an excel table w
 From this we will calculate the heterozygosity with Fst to evaluate the genetic variation in the subpops. 
 
 Fst = variation of allele frequencies in the subpopulation
+
+
+
+-> ne und wie verändert es sich? 
+welche mase machen sinn, wie kann man ne und haplotypen diversität messen? 
+
+Ne = (4 * Nm * Nf) / (Nm + Nf)

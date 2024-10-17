@@ -3,10 +3,12 @@ Thoughts 17.10.24
 New Idea: 
 
 Look at Ne (effective size:  Ne = (4 * Nm * Nf) / (Nm + Nf)) => the dynamics of this 
+Also other statistics (Fst), haplotype statistics 
 
 ->  how extinction of subpopulations affects Ne of the metapopulation (NeMeta) and of separate surviving subpopulations (NeRx) under different rates and patterns of genetic exchange (= migration rate) between subpopulations.
 
-
+Today: 
+- SLiM in R and get stuff out 
 
 
 

@@ -6,12 +6,13 @@ SLiM v4.2.1
 
 Purpose: Choose different values for parameters which are then written to a slim script, which you can then run on SLiM on command line.
 Script will run SLiM with the given values you have choosen.
+Just runs a single set of parameter values.
 
 
 01_Skeleton_R_make_input_file_Loop_over_Parameter_values
 
 Purpose: Choose multiple different values for a given parameter. Loop over different possible values for a given parameter and output a new slim script with for each new parameter value. Output a new script for all combinations of possible parameter values (over all different parameters)
-
+Can run multiple different combinations of parameter values.
 
 02_Skeleton_SLiM
 
@@ -30,6 +31,9 @@ Write your final results to disc
 
 After calculating your final results you can plot, do stat tests, etc, whatever is relevant for your question
 
+
+
+Workflow:
 
 
 

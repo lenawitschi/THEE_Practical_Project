@@ -1,0 +1,61 @@
+---
+title: "Metapopulation Migration/Extinction Model"
+output: html_notebook
+---
+
+This is the code for our Model for Metapopulations in SLiM.
+We first softcode migration rate in R and how many reps we choose and which rates. 
+
+```{r}
+
+rm(list=ls(all=TRUE)) ## clear R environment
+
+options(scipen = 999) ## scientific notation penalty
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/Russ")
+
+## choose number of reps for each parameter set
+reps <- 5
+
+
+## Choose ALL the different parameter values we are interested in
+all_m <- c(0.2,0.3,0.4)
+
+for(m in all_m){
+
+  ## File name for SLiM input file (this is what we will input into SLiM)
+  sh_name <- paste0("SLiM_input_migration",m,"_reps",reps,".txt")
+  
+  
+  ## Make a code block for SLiM with your parameter values
+  slim_code_block <- paste0("slim -d migration=",m," metapop_script_basic_test.slim")
+  
+  ## Make a SLiM script
+  ## Write your SLiM 'code block' to the script
+  #write ("#SLiM", sh_name)
+  #write (paste0("for rep in {1..",reps,"}"), sh_name, append = TRUE)
+  #write ("do", sh_name, append = TRUE)
+  #write (slim_code_block, sh_name, append = TRUE)
+  #write ("done", sh_name, append = TRUE)
+  }
+ 
+slim_code_block
+system(slim_code_block)
+read.csv("slim_muts_output_migration =0.4_seed =6858523242063796989.csv")
+
+## This gives us a new SLiM input file for each combination of parameter values
+  
+## Copy/paste SLiM script into command line to run SLiM simulations
+## Outputs a new results file from SLiM for however many reps you define above
+
+
+```
+```{bash, engine.opts='-l'}
+
+cd ~/Documents/GitHub/THEE_Practical_Project 
+ls
+
+
+## slim_code_block
+
+```

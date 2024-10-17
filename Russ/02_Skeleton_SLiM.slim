@@ -1,0 +1,52 @@
+// SLiM code
+initialize() {
+
+	// In these few lines I 'soft-code' variables in the SLiM script. Pass real values into 'u' and 'r' in your R script
+	
+	// define 'u' and 'r' in R script
+	initializeMutationRate(u); // mutation rate "soft-coded" with 'u'
+	initializeRecombinationRate(r); // recombination rate "soft-coded" with 'r' 
+
+
+	// all of the following parameters are 'hard-coded'
+	// follow the above pattern to soft-code other parameters in your SLiM script
+
+
+	// m1 mutation type: neutral
+	initializeMutationType("m1", 0.5, "f", 0.0);
+	
+	// g1 genomic element type: uses m1 for all mutations
+	initializeGenomicElementType("g1", m1, 1.0);
+	
+	// uniform chromosome of length 100 kb with uniform recombination
+	initializeGenomicElement(g1, 0, 99999);
+	
+	// add whatever SLiM events you want
+	// SLiM SLiM
+	// SLiM SLiM ..
+	
+	
+}
+
+1 early() {
+	catn("parameters: u=" + u + " r=" + r + " seed=" + getSeed()); // print out parameter values - I just do this to doublecheck I am running the values I want
+	defineConstant("simID", "u" + u + "_r" + r + "_seed" + getSeed()); // create a variable that contains all the values of the soft-coded variables. When I output results files I name them with the parameter values so that I always know what results are from what values
+}
+
+
+
+
+// create two patches of 500 individuals
+1 early() {
+	sim.addSubpop("p1", 500); // normal SLiM stuff
+	sim.addSubpop("p2", 500);
+}
+
+
+
+// output all mutations of a give type to csv file - can use this to calculate whatever metrics you want to look at
+// see SLiM manual pages 794-5
+1000 late() {
+	sim.outputMutations(sim.mutationsOfType(m1), "slim_muts_output_" + simID + ".csv");
+	//sim.outputFull("slim_full_output_" + simID + ".csv"); // output entire simulation results (if need be)
+}

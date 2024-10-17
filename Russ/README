@@ -14,6 +14,7 @@ Just runs a single set of parameter values.
 Purpose: Choose multiple different values for a given parameter. Loop over different possible values for a given parameter and output a new slim script with for each new parameter value. Output a new script for all combinations of possible parameter values (over all different parameters)
 Can run multiple different combinations of parameter values.
 
+
 02_Skeleton_SLiM
 
 Purpose: Write your SLiM model in here. Soft-code all parameters that you want to investigate with your study.

@@ -1,7 +1,4 @@
 
-sim.outputMutations(sim.mutationsOfType(m1))
-
-
 
 Use R & SLiM for evolutionary rescue
 R v2024.04.1+748 

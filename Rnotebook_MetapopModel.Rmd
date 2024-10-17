@@ -18,44 +18,30 @@ setwd("~/Documents/GitHub/THEE_Practical_Project/Russ")
 reps <- 5
 
 
-## Choose ALL the different parameter values we are interested in
+## Choose the different parameter values we are interested in (migration rate)
 all_m <- c(0.2,0.3,0.4)
 
+
+#make a for loop for all the different values we want to test for m 
 for(m in all_m){
 
-  ## File name for SLiM input file (this is what we will input into SLiM)
+  ## File name for SLiM input file (this is what we will input into SLiM -> directly via bash in R)
   sh_name <- paste0("SLiM_input_migration",m,"_reps",reps,".txt")
   
   
-  ## Make a code block for SLiM with your parameter values
+  ## Make a code block for SLiM with your parameter values (code block = input into terminal / directly via bash command in R)
+  #metapop_script_basic_test.slim -> slim code document
   slim_code_block <- paste0("slim -d migration=",m," metapop_script_basic_test.slim")
-  
-  ## Make a SLiM script
-  ## Write your SLiM 'code block' to the script
-  #write ("#SLiM", sh_name)
-  #write (paste0("for rep in {1..",reps,"}"), sh_name, append = TRUE)
-  #write ("do", sh_name, append = TRUE)
-  #write (slim_code_block, sh_name, append = TRUE)
-  #write ("done", sh_name, append = TRUE)
   }
  
-slim_code_block
-system(slim_code_block)
-read.csv("slim_muts_output_migration =0.4_seed =6858523242063796989.csv")
 
-## This gives us a new SLiM input file for each combination of parameter values
-  
-## Copy/paste SLiM script into command line to run SLiM simulations
-## Outputs a new results file from SLiM for however many reps you define above
+#slim_code_block -> might not be needed...to still be tested
+system(slim_code_block) #call the code block for slim in the terminal via bash, system invokes the OS command specified by command.
+
+read.csv("~/Documents/GitHub/THEE_Practical_Project/Russ/slim_muts_output_migration =0.4_seed =3208728106824729961.csv") #File name has to be changed for newly created csv files
+
+#outputs a csv file with all our data :) - (1) the mutation’s id property, (2) the identifier of its mutation type, (3) its position, (4) its selection coefficient, (5) its dominance coefficient, (6) origin subpopulation identifier, (7) origin tick, and (8) prevalence.
 
 
 ```
-```{bash, engine.opts='-l'}
 
-cd ~/Documents/GitHub/THEE_Practical_Project 
-ls
-
-
-## slim_code_block
-
-```

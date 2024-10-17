@@ -35,6 +35,13 @@ After calculating your final results you can plot, do stat tests, etc, whatever 
 
 Workflow:
 
+1) Decide what parameters you want to investigate (biological question)
+2) Adapt 02 SLiM script to your specific model of interest
+3) Adapt 02 SLiM script to soft-code in your parameters of interest
+4) Input values of parameters of interest into 00 or 01 R code
+5) Copy/paste slim scripts from 00 or 01 R code into command line
+6) Adapt 03 R code to calculate your metric(s) of interest
+7) Investigate final results, eg, plot final results, hypothesis testing, etc
 
 
 

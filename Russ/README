@@ -20,6 +20,7 @@ eg, if you want to investigate the effect of migration on genetic diversity, sof
 
 Currently, I have written the skeleton to output a csv file containing all the mutations in the metapopulation (can be subset by patch in R)
 
+
 03_Skeleton_R_analyze
 
 Purpose: Read in all your SLiM raw results, record the values of each parameter from each raw result file, calculate whatever metrics you want to investigate

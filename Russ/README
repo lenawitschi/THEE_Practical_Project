@@ -1,1 +1,37 @@
+Use R & SLiM for evolutionary rescue
+R v2024.04.1+748 
+SLiM v4.2.1
+
+00_Skeleton_R_make_input_file_Learning
+
+Purpose: Choose different values for parameters which are then written to a slim script, which you can then run on SLiM on command line.
+Script will run SLiM with the given values you have choosen.
+
+
+01_Skeleton_R_make_input_file_Loop_over_Parameter_values
+
+Purpose: Choose multiple different values for a given parameter. Loop over different possible values for a given parameter and output a new slim script with for each new parameter value. Output a new script for all combinations of possible parameter values (over all different parameters)
+
+
+02_Skeleton_SLiM
+
+Purpose: Write your SLiM model in here. Soft-code all parameters that you want to investigate with your study.
+eg, if you want to investigate the effect of migration on genetic diversity, soft-code in migration rate. If you want to investigate other parameters, soft-code those parameters as well
+
+Currently, I have written the skeleton to output a csv file containing all the mutations in the metapopulation (can be subset by patch in R)
+
+03_Skeleton_R_analyze
+
+Purpose: Read in all your SLiM raw results, record the values of each parameter from each raw result file, calculate whatever metrics you want to investigate
+ie, can calculate Fst/pi/etc whatever you're interested in
+Record your metrics in a final results dataframe
+Write your final results to disc
+
+After calculating your final results you can plot, do stat tests, etc, whatever is relevant for your question
+
+
+
+
+
+
 

@@ -8,6 +8,6 @@ Our biological Question is the following:
 
 **Metapopulation - extinction colonization model in SLiM**
 
-*What is the effect of different migration rates on (local) genetic variation - of the subpopulation - and how does this influence extinction time of the subpopulations?*
+*What is the effect of different migration rates on (local) genetic variation - of the subpopulation - and how does this influence extinction time of the subpopulations?* (16.10.24)
 
-*What is the effect on Ne?*
+*What is the effect of different migration rates on Ne (effective pop size), Fst and haplotype diversity in the different subpopulations?* (17.10.24)

@@ -12,4 +12,5 @@ Evolution.R
 Rescue.slim
 Loïc_is_bad_at.R
 
-I can type 'cd Evo' then press tab key
+I can type 'cd Evo' then press tab key and the command line will autocomplete Evolution.R
+(use this to change directory when there are spaces in your directory path (command line doesn't like spaces))

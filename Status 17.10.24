@@ -7,8 +7,7 @@ Also other statistics (Fst), haplotype statistics
 
 ->  how extinction of subpopulations affects Ne of the metapopulation (NeMeta) and of separate surviving subpopulations (NeRx) under different rates and patterns of genetic exchange (= migration rate) between subpopulations.
 
-Today: 
-- SLiM in R and get stuff out 
-
+Where we are now: 
+-> Created a R notebook with all we need, now we need to add the analyzing part + to make it work with different csv file names !!
 
 

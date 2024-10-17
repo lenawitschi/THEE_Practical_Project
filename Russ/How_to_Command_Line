@@ -7,7 +7,7 @@ cd = change directory
 pressing 'tab' key will autocomplete a file/directory if we are trying to change directory
 
 Example:
-If these are the directories in my current working directory
+If these are the files/directories in my current working directory
 Evolution.R
 Rescue.slim
 Loïc_is_bad_at.R

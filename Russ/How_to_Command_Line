@@ -3,6 +3,7 @@ Command line functions
 pwd = gives us currently working directory
 ls = shows us all files in current directory
 cd = change directory
+less = read a file in command line
 
 pressing 'tab' key will autocomplete a file/directory if we are trying to change directory
 

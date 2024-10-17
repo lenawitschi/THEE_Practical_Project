@@ -1,1 +1,15 @@
+Command line functions
 
+pwd = gives us currently working directory
+ls = shows us all files in current directory
+cd = change directory
+
+pressing 'tab' key will autocomplete a file/directory if we are trying to change directory
+
+Example:
+If these are the directories in my current working directory
+Evolution.R
+Rescue.slim
+Loïc_is_bad_at.R
+
+I can type 'cd Evo' then press tab key

@@ -25,7 +25,7 @@ sh_name <- paste0("SLiM_input_u",u,"_r",r,"_reps",reps,".txt")
 
 
 ## Make a code block for SLiM with your parameter values
-slim_code_block <- paste0("slim -d u=",u," -d r=",r," 03_Skeleton_SLiM.slim")
+slim_code_block <- paste0("slim -d u=",u," -d r=",r," 02_Skeleton_SLiM.slim")
 
 ## Make a SLiM script
 ## Write your SLiM 'code block' to the script

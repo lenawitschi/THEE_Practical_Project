@@ -1,0 +1,50 @@
+---
+title: "Metapopulation Migration/Extinction Model"
+author: Emma Ochsner and Lena Witschi
+output: html_notebook
+---
+
+# Introduction
+
+This is the code for our Model for Metapopulations in SLiM. We first softcode migration rate in R and how many reps we choose and which rates.
+
+## Generating Data in SLiM with Parameters from R
+
+```{r}
+
+rm(list=ls(all=TRUE)) ## clear R environment
+
+options(scipen = 999) ## scientific notation penalty
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/Russ")
+
+## choose number of reps for each parameter set
+reps <- 5
+
+
+## Choose the different parameter values we are interested in (migration rate)
+all_m <- c(0.2,0.3,0.4)
+
+
+#make a for loop for all the different values we want to test for m 
+for(m in all_m){
+
+  ## File name for SLiM input file (this is what we will input into SLiM -> directly via bash in R)
+  sh_name <- paste0("SLiM_input_migration",m,"_reps",reps,".txt")
+  
+  
+  ## Make a code block for SLiM with your parameter values (code block = input into terminal / directly via bash command in R)
+  #metapop_script_basic_test.slim -> slim code document
+  slim_code_block <- paste0("slim -d migration=",m," metapop_script_basic_test.slim")
+  }
+ 
+
+#slim_code_block -> might not be needed...to still be tested
+system(slim_code_block) #call the code block for slim in the terminal via bash, system invokes the OS command specified by command.
+
+read.csv("~/Documents/GitHub/THEE_Practical_Project/Russ/slim_muts_output_migration =0.4_seed =3208728106824729961.csv") #File name has to be changed for newly created csv files
+
+#outputs a csv file with all our data :) - (1) the mutation’s id property, (2) the identifier of its mutation type, (3) its position, (4) its selection coefficient, (5) its dominance coefficient, (6) origin subpopulation identifier, (7) origin tick, and (8) prevalence.
+
+
+```

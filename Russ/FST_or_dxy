@@ -37,3 +37,6 @@ dxy = p1*q2 + p2*q1
 
 
 
+Q: how to calculate genome-wide metrics?
+Q: what if one population only has 1 polymorphic locus and a different population has 100 polymorphic loci - how to compare between the two?
+

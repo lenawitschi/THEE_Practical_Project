@@ -2,3 +2,19 @@
 #use 'hierfstat' in R
 
 #https://cran.r-project.org/web/packages/hierfstat/hierfstat.pdf
+
+
+
+library(hierfstat)
+
+## make up test data
+fst_test <- data.frame(array(NA, dim = c(4,4), dimnames = list(c(),c("pop","l1","l2","l3"))))
+fst_test$pop <- c(1,1,2,2)
+fst_test$l1 <- seq(0.25,1,by=0.25)
+fst_test$l2 <- seq(0,0.75,by=0.25)
+fst_test$l3 <- seq(0,0.99,by=0.33)
+fst_test[2,] <- fst_test[1,]
+
+## use heirfstat to calculate F stats
+basic.stats(fst_test, diploid = F)
+

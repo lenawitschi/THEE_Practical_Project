@@ -1,8 +1,0 @@
-
-
-2nd p in slim out is patch the mutation originated in
-
-for loop for sims is not implemented, needs to be added to bash code block
-
-idea of soft coding FILENAME in R then passing to slim then saving slim out as FILENAME - better to just output slim as is (naming file with parameter values) then loop over ALL output files - eg as 03 R file is coded
-(in order to keep parameter values linked to file)

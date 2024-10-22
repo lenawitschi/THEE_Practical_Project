@@ -1,0 +1,8 @@
+
+p = allele frequency of allele 1
+q = allele frequency of allele 2
+
+heterozygosity = 2*p*q
+
+Q: how to calculate genome-wide heterozygosity?
+Q: what if one population only has 1 polymorphic locus and a different population has 100 polymorphic loci - how to compare between the two?

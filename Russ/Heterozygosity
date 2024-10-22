@@ -1,4 +1,6 @@
 
+p = allele frequency of allele 1
+q = allele frequency of allele 2
 
 heterozygosity = 2*p*q
 

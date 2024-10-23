@@ -10,7 +10,10 @@ Our biological Question is the following:
 
 *What is the effect of different migration rates on (local) genetic variation - of the subpopulation - and how does this influence extinction time of the subpopulations?* (16.10.24)
 
-*What is the effect of different migration rates on Genome Wide Heterozygosity (within subpop diversity), dxy (heterozygosity between subpops) and Fst in the different subpopulations?* (17.10.24)
+*What is the effect of different migration rates on Genome Wide Heterozygosity (within subpop diversity), dxy (heterozygosity between subpops) and Fst in the different subpopulations?* (23.10.24)
+
+(Fst = a measure of genomic differentiation, dxy = a measure of absolute divergence)
+
 
 - Neutral Model (mutation has fitness = 0)
 - Diploid Population

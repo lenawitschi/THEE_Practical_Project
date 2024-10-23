@@ -10,12 +10,18 @@ Our biological Question is the following:
 
 *What is the effect of different migration rates on (local) genetic variation - of the subpopulation - and how does this influence extinction time of the subpopulations?* (16.10.24)
 
-*What is the effect of different migration rates on Genome Wide Heterozygosity (within subpop diversity), dxy (heterozygosity between subpops) and Fst in the different subpopulations?* (23.10.24)
-
-(Fst = a measure of genomic differentiation, dxy = a measure of absolute divergence)
+*What is the effect of different migration rates on Genome Wide Heterozygosity (within subpop diversity) in the different subpopulations?* (23.10.24)
 
 
 - Neutral Model (mutation has fitness = 0)
 - Diploid Population
 - Looking at the entire Population and not only a sample
-- 
+
+--------------------------------------------------------------------------------------------------------------------
+**Next steps**
+
+- only look at the heterozygosity in the demes, and how they vary across them
+- look at different extinction rates -> how does the variance between the subpopulation change?
+- same with migration rates for a fix extinction rate -> how does this influence the variance?
+- plots with mean and variance per run and then take a mean and variance from this data to incorporate it into a final plot 
+  

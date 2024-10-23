@@ -60,7 +60,7 @@ library("hierfstat")
 ## make a dataframe to collect results
 ## each row in the dataframe corresponds to the results from a single SLiM simulation run
 ## you can add additional columns to the dataframe here if you want to record multiple different metrics (change dim size and dimnames)
-results_df <- data.frame(array(NA, dim = c(length(slim_out_files),4), dimnames = list(c(),c("m","reps","seed", "Heterozygosity"))))
+results_df <- data.frame(array(NA, dim = c(length(slim_out_files),16), dimnames = list(c(),c("m","reps","seed", "Heterozygosity_genomewide","p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10", "dxy", "Fst"))))
 
 for(i in 1:length(slim_out_files)){ ## loop over all SLiM results files
   
@@ -77,25 +77,50 @@ for(i in 1:length(slim_out_files)){ ## loop over all SLiM results files
   ## add in column names here - I was too lazy
   colnames(single_file_df) <- c("","Max Number of Gen","Number of Generations", "", "Deme", "mut id", "mut typ", "position on gemome", "fitness", "dominance", "original deme", "gen mut occured", "number of indiv. with mut")
   
+  
   ## calculate whatever metrics you want, eg, allele frequency, Fst, etc
+  
+  
   ## patch p mutations
-  
-  data_Fst <- data.frame(array(NA, dim = c(length(slim_out_files),3), dimnames = list(c(),c("Generations","reps","seed"))))
-  
-  for(p in 1:10){
+   for(p in 1:10){
     patch_p <- single_file_df[single_file_df[,5]=="pi",]
   }
+  
+  
+  
+  #data_Fst <- data.frame(array(NA, dim = c(length(slim_out_files),3), dimnames = list(c(),c("Generations","alellefreq1","allelefreq2"))))
+ 
 
   ##CReate a new column with allele frequencies (Add allele freq. in a seperate row (for each file))
-   single_file_df$Allelefreq <- single_file_df[,13]/50
+  #50 is K -> SO for allele freq. you have to calculate x/100 -> consider we have diploid individuals and K=50
+   single_file_df$Allelefreq <- single_file_df[,13]/100
    
    
    #calculate heterozygosity per locus (2pq -> p is allele freq and q = 1-p) (within deme)
-   
   single_file_df$Heterozygosity_l <- 2*single_file_df[,14]*(1-single_file_df[,14])
   
   ###Next step: convert to genome wide heterozygosity (within deme)
+  #na.rm = TRUE ensures that any missing values (NA) in the heterozygosity column are ignored during the calculation.
+  
+  #genomewide for the subpopulations
+  
+  
+  for (x in 1:10){
+  sel_row_p <- single_file_df[,5] == paste0("p",x)
+  vektor_p_pol <- single_file_df[sel_row_p,14]
+  vektor_p_0 <-rep(0,10000 - length(vektor_p_pol))
+  h_p <- mean(c(vektor_p_pol,vektor_p_0), na.rm = TRUE)
+  results_df[i,paste0("p",x)] <- h_p
+  }
+  
+  #For the metapopulation
+  vektor_pol <- c(single_file_df$Heterozygosity_l)
+  vektor_0 <- rep(0, 10000-length(vektor_pol))
+  genome_wide_heterozygosity <- mean(c(vektor_pol, vektor_0), na.rm = TRUE)
+  
+  
   #Also calculate H between demes (dxy)
+  
   
   ## you guys calculate what you want here ##
   #metric <- 
@@ -107,8 +132,9 @@ for(i in 1:length(slim_out_files)){ ## loop over all SLiM results files
   
   results_df[i,"seed"] <- get_the_seed ## record the seed for this particular results file (this lets us keep track of individual reps of a give parameter combination), ie, maybe we did 5 reps of u=1e-8 and r=1e-8, so we will have 5 rows for these specific parameter values
   
-  results_df[i,"Fst"] <- metric ## record your metric of choice
+  #results_df[i,"Fst"] <- metric ## record your metric of choice
   
+  results_df[i, "Heterozygosity_genomewide"] <- genome_wide_heterozygosity
   
   #first column: pop. identifier, next ones: Genotypes at each of the loci. 
 

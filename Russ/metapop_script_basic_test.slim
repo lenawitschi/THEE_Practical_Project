@@ -8,7 +8,7 @@ initialize() {
 	
 	//Hard code for other variables
 	initializeSLiMModelType("nonWF"); // means that population size can change dynamically
-	defineConstant("K", 50);     // carrying capacity per subpop
+	defineConstant("K", 1000);     // carrying capacity per subpop
 	defineConstant("N", 10);     // number of subpopulations
 	defineConstant("m",migration);			//Migration rate - soft coded
 	defineConstant("e", 0.1);    // subpopulation extinction rate
@@ -39,7 +39,7 @@ defineConstant("simID", "migration =" + migration + "_seed =" + getSeed()); // c
 // initialization of the metapopulation
 1 early() {
 	for (i in 1:N)
-		sim.addSubpop(i, (i == 1) ? 10 else 0); // this creates 10 subpopulations where the first one is filled with 10 individuals and all others are empty
+		sim.addSubpop(i, (i == 1) ? K else K); // this creates 10 subpopulations where the first one is filled with 10 individuals and all others are empty
 }
 
 // this starts the life cycle
@@ -68,7 +68,8 @@ early() {
 // this is where reproduction occurs
 late() { // at the end of every generation
 	if (sum(sim.subpopulations.individualCount) == 0)
-		stop("Global extinction in cycle " + sim.cycle + "."); // stop the simulation if the global population went extinct
+	sim.outputMutations(sim.mutationsOfType(m1),"slim_muts_output_" + "reps_" + reps +"_extinction_cycle_"+sim.cycle +"_"+ simID  + ".csv");
+		//stop("Global extinction in cycle " + sim.cycle + "."); // stop the simulation if the global population went extinct
 }
 // at time point 2000
 2000 late() {

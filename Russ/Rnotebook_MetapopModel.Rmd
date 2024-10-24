@@ -23,7 +23,7 @@ reps <- 5
 
 
 ## Choose the different parameter values we are interested in (migration rate)
-all_m <- c(0.2,0.3,0.4)
+all_m <- c(0.1, 0.2, 0.3, 0.4)
 repetition <- c(1, 2, 3, 4, 5)
 
 #make a for loop for all the different values we want to test for m 
@@ -53,7 +53,9 @@ for(m in all_m){
 
 ```{r}
 ## all SLiM output files
-slim_out_files <- list.files(pattern = "slim_muts_output")
+slim_out_files1 <- list.files(pattern = "slim_muts_output")
+slim_out_files <- slim_out_files1[!grepl("extinction", slim_out_files1)]
+
 #install.packages("hierfstat")
 library("hierfstat")
 
@@ -91,8 +93,8 @@ for(i in 1:length(slim_out_files)){ ## loop over all SLiM results files
  
 
   ##CReate a new column with allele frequencies (Add allele freq. in a seperate row (for each file))
-  #50 is K -> SO for allele freq. you have to calculate x/100 -> consider we have diploid individuals and K=50
-   single_file_df$Allelefreq <- single_file_df[,13]/100
+  #1000 is K -> SO for allele freq. you have to calculate x/2000 -> consider we have diploid individuals and K=1000 -> 2000 alleles
+   single_file_df$Allelefreq <- single_file_df[,13]/2000
    
    
    
@@ -154,17 +156,79 @@ sel_col <- Example_results[,4:13]
 row_variances <- apply(sel_col, 1, var)
 
 Example_results$variance <- row_variances
+
+
+
+#m1 <- Example_results[,1]=="0.2"
+#m2 <- Example_results[,1]=="0.3"
+#m3 <- Example_results[,1]=="0.4"
+
+#m1_val <- as.numeric(Example_results[m1, 14])
+#m2_val <- as.numeric(Example_results[m2, 14])
+#m3_val <- as.numeric(Example_results[m3, 14])
+
+#mean1_of_means <- mean(m1_val)
+#mean2_of_means <- mean(m2_val)
+#mean3_of_means <- mean(m3_val)
+
+
   
+#dev.off()
+
+y.y <- seq(min(Example_results$mean)*0.9, max(Example_results$mean)*1.1, length.out = 2)
+
+par(mar=c(6,6,4,2))
+plot( 0, type ="n", las = 1, ylab = "", xlab = "migration rates", cex.lab = 1.2, cex.main = 1.6,
+     main = "Heterozygosity for different migration rates", xlim = c(0,1), ylim = y.y, lwd = 2)
+title(ylab = "mean H", line = 4, cex.lab = 1.2)
 
 
-par(mar=c(5,5,4,2))
-plot( x = Example_results$m,y = Example_results$mean, type ="n", las = 1, ylab = "H", xlab = "migration rates", cex.lab = 1.5, cex.main = 1.6,
-     main = "Heterozygosity for different migration rates", xlim = c(0,1), ylim = c(0,1), lwd = 2)
+#mean_of_means <- rep(NA, length(all_m))
+mean_of_means <- numeric(length(all_m))
+result_array <- array(NA, dim = c(length(all_m), 2), dimnames = list(c(), c("mean", "mig")))
 
-lines(y = Example_results$mean, x = Example_results$m, lwd = 3, col = "pink")
+for (i in seq_along(all_m)){
+  m <- all_m[i]  # Get the current migration rate
+  mig <- Example_results[, 1] == m  # Get the logical vector for the current migration rate
+  mig_val <- as.numeric(Example_results[mig, 14])  # Extract the corresponding values from the 14th column
+    mean_of_means[i] <- mean(mig_val, na.rm = TRUE)  # Compute mean, removing NA values
+  # Store the mean and migration rate in the result array
+  result_array[i, 1] <- mean_of_means[i]  # Fill the mean column
+  result_array[i, 2] <- m  # Fill the migration rate column
+}
+result_array
+
+
+#does not work yer.....
+#mean_of_variance <- numeric(length(all_m))
+#result_array_var <- array(NA, dim = c(3, 2), dimnames = list(c(), c("variance", "mig")))
+
+#for (i in seq_along(all_m)){
+  #m <- all_m[i]  # Get the current migration rate
+  #mig_var <- Example_results[, 1] == m  # Get the logical vector for the current migration rate
+  #mig_val_var <- as.numeric(Example_results[mig_var, 15])  # Extract the corresponding values from the 14th column
+   # mean_of_variance[i] <- mean(mig_val_var, na.rm = TRUE)  # Compute mean, removing NA values
+  # Store the mean and migration rate in the result array
+  #result_array_var[i, 1] <- mean_of_variance[i]  # Fill the mean column
+  #result_array_var[i, 2] <- m  # Fill the migration rate column
+#}
+#result_array_var
+#until here 
+
+
+points(Example_results$m,Example_results$mean, lwd = 3, col = "pink")
+lines(result_array[,2],result_array[,1],  lwd = 3, col = "red")
+
+legend(x = 0.6, y = 0.0013, legend = c("Mean H for Subpopulations", "Mean of all Means"), lwd = c(3,3), cex = 0.75, col = c("pink", "red"), bty = "n")
+
+#points(x = 0.2, mean1_of_means, lwd = 3, col = "red")
+#points(x = 0.3, mean2_of_means, lwd = 3, col = "red")
+#points(x = 0.4, mean3_of_means, lwd = 3, col = "red")
 
 
 
 
 
 ````
+
+Since the mean of the variances is so small, we do not show it in this plot. 

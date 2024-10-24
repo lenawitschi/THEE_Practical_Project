@@ -16,7 +16,7 @@ rm(list=ls(all=TRUE)) ## clear R environment
 
 options(scipen = 999) ## scientific notation penalty
 
-setwd("~/Documents/GitHub/THEE_Practical_Project/Russ")
+setwd("~/Documents/GitHub/THEE_Practical_Project/WEEK2")
 
 ## choose number of reps for each parameter set
 reps <- 5
@@ -106,7 +106,7 @@ for(i in 1:length(slim_out_files)){
 
 ## choose working directory
 ## write your results to disc
-setwd("~/Documents/GitHub/THEE_Practical_Project/Russ")
+setwd("~/Documents/GitHub/THEE_Practical_Project/WEEK2")
 write.csv(results_df, "Example_Results.csv", row.names = F)
 
 

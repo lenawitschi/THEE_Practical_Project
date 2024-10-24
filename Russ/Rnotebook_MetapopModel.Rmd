@@ -138,13 +138,33 @@ setwd("~/Documents/GitHub/THEE_Practical_Project/Russ")
 write.csv(results_df, "Example_Results.csv", row.names = F)
 
 
-
-
-
-
-
-
-
 ```
 
 
+````{r}
+
+
+Example_results <- read.csv("Example_Results.csv")
+
+row_mean <- rowMeans(Example_results[,4:13])
+
+Example_results$mean <- row_mean
+
+sel_col <- Example_results[,4:13]
+row_variances <- apply(sel_col, 1, var)
+
+Example_results$variance <- row_variances
+  
+
+
+par(mar=c(5,5,4,2))
+plot( x = Example_results$m,y = Example_results$mean, type ="n", las = 1, ylab = "H", xlab = "migration rates", cex.lab = 1.5, cex.main = 1.6,
+     main = "Heterozygosity for different migration rates", xlim = c(0,1), ylim = c(0,1), lwd = 2)
+
+lines(y = Example_results$mean, x = Example_results$m, lwd = 3, col = "pink")
+
+
+
+
+
+````

@@ -6,11 +6,9 @@ output: html_notebook
 
 # Introduction
 
-This is the code for our Model for Metapopulations in SLiM. 
+This is the code for our Model for Metapopulations in SLiM. We first softcode migration rate in R and how many reps we choose and which rates.
 
 ## Generating Data in SLiM with Parameters from R
-
-In this first r code block, we generate a code block (slim_code_block). This contains all the parameters we soft coded in SLiM meaning we define them first in R. After generating the code block, we send it to the terminal of the computer with the help of the system command. This runs the SLiM code and outputs all the data. 
 
 ```{r}
 
@@ -23,12 +21,20 @@ setwd("~/Documents/GitHub/THEE_Practical_Project/Russ")
 ## choose number of reps for each parameter set
 reps <- 5
 
-## Choose the different parameter values we are interested in (migration rate) and define how many repitions we want
+
+## Choose the different parameter values we are interested in (migration rate)
 all_m <- c(0.2,0.3,0.4)
-repetition <- c(1, 2, 3, 4, 5) #do we need this?
+repetition <- c(1, 2, 3, 4, 5)
 
 #make a for loop for all the different values we want to test for m 
 for(m in all_m){
+  
+  ## File name for SLiM input file (this is what we will input into SLiM -> directly via bash in R)
+ # sh_name <- paste0("SLiM_input_migration",m,".txt")
+  
+  ## Make a code block for SLiM with your parameter values (code block = input into terminal / directly via bash command in R)
+  #metapop_script_basic_test.slim -> slim code document
+  
     for(r in 1:reps){
   slim_code_block <- paste0("slim -d migration=",m," -d repetition=", r," metapop_script_basic_test.slim")
   #slim_code_block -> might not be needed...to still be tested
@@ -37,17 +43,13 @@ for(m in all_m){
   }
 
 
+
+#read.csv("~/Documents/GitHub/THEE_Practical_Project/Russ/slim_muts_output_migration =0.4_seed =3208728106824729961.csv") #File name has to be changed for newly created csv files
+
 #outputs a csv file with all our data :) - (1) the mutation’s id property, (2) the identifier of its mutation type, (3) its position, (4) its selection coefficient, (5) its dominance coefficient, (6) origin subpopulation identifier, (7) origin tick, and (8) prevalence.
 
 
 ```
-
-
-
-
-## Reading out the Data and making it ready for analysis 
-
-In this block we generate a data frame to collect all the results we want for later analysis. 
 
 ```{r}
 ## all SLiM output files
@@ -57,60 +59,74 @@ library("hierfstat")
 
 ## make a dataframe to collect results
 ## each row in the dataframe corresponds to the results from a single SLiM simulation run
+## you can add additional columns to the dataframe here if you want to record multiple different metrics (change dim size and dimnames)
 results_df <- data.frame(array(NA, dim = c(length(slim_out_files),13), dimnames = list(c(),c("m","reps","seed","p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10"))))
 
-## loop over all SLiM results files
-for(i in 1:length(slim_out_files)){
+for(i in 1:length(slim_out_files)){ ## loop over all SLiM results files
   
   single_file <- slim_out_files[i] ## this is the name of a single SLiM result file
   
-  get_the_m <- as.numeric(gsub(".*_migration =|_seed.*", "", single_file)) ## here we use gsub() to get the value of 'm' that we saved in the name of the results file
+  
+  get_the_m <- as.numeric(gsub(".*_migration =|_seed.*", "", single_file))## here we use gsub() to get the value of 'm' that we saved in the name of the results file
    get_the_reps <- as.numeric(gsub(".*_reps_|_migration.*", "", single_file))
   
   get_the_seed <- as.numeric(gsub(".*_seed =|\\.csv","",single_file))
   
   single_file_df <- read.csv(slim_out_files[i], sep=" ", header=F, stringsAsFactors=F) ## read the data in the SLiM results file into R
   
-  ## add in column names (for the output data of SLiM)
-  colnames(single_file_df) <- c("","Tick","Cycle", "T", "Deme", "mut id", "mut typ", "position on gemome", "fitness", "dominance", "original deme", "generation mut occured", "number of indiv. with mut")
-  
-  
-  ## calculate whatever metrics you want
-  ## patch p mutations -> do we need this?
-   #for(p in 1:10){
-    #patch_p <- single_file_df[single_file_df[,5]=="pi",]
-  #}
+  ## add in column names here - I was too lazy
+  colnames(single_file_df) <- c("","Max Number of Gen","Number of Generations", "", "Deme", "mut id", "mut typ", "position on gemome", "fitness", "dominance", "original deme", "gen mut occured", "number of indiv. with mut")
   
 
-  ##Create a new column with allele frequencies (Add allele freq. in a seperate row (for each file))
+  ## calculate whatever metrics you want, eg, allele frequency, Fst, etc
+  
+  ## patch p mutations
+   #for(p in 1:10){
+   # patch_p <- single_file_df[single_file_df[,5]=="pi",]
+ # }
+  
+  
+  
+  #data_Fst <- data.frame(array(NA, dim = c(length(slim_out_files),3), dimnames = list(c(),c("Generations","alellefreq1","allelefreq2"))))
+ 
+
+  ##CReate a new column with allele frequencies (Add allele freq. in a seperate row (for each file))
   #50 is K -> SO for allele freq. you have to calculate x/100 -> consider we have diploid individuals and K=50
    single_file_df$Allelefreq <- single_file_df[,13]/100
    
    
-  ##calculate heterozygosity per locus (2pq -> p is allele freq and q = 1-p) (within deme)
+   
+   #calculate heterozygosity per locus (2pq -> p is allele freq and q = 1-p) (within deme)
   single_file_df$Heterozygosity_l <- 2*single_file_df[,14]*(1-single_file_df[,14])
   
   ###Next step: convert to genome wide heterozygosity (within deme)
   #na.rm = TRUE ensures that any missing values (NA) in the heterozygosity column are ignored during the calculation.
-  #genomewide for the subpopulations
+  
+  #genomewide heterozygosity for the subpopulations
   for (x in 1:10){
   sel_row_p <- single_file_df[,5] == paste0("p",x)
-  vektor_p_pol <- single_file_df[sel_row_p,14]
+  vektor_p_pol <- single_file_df[sel_row_p,15]
   vektor_p_0 <-rep(0,10000 - length(vektor_p_pol))
   h_p <- mean(c(vektor_p_pol,vektor_p_0), na.rm = TRUE)
   results_df[i,paste0("p",x)] <- h_p
   }
   
-  #For the metapopulation -> do not need and probably also false calculation
-  #vektor_pol <- c(single_file_df$Heterozygosity_l)
-  #vektor_0 <- rep(0, 10000-length(vektor_pol))
-  #genome_wide_heterozygosity <- mean(c(vektor_pol, vektor_0), na.rm = TRUE)
-    
+  #genomewide heterozygosity for the metapopulation
+#  vektor_pol <- c(single_file_df$Heterozygosity_l)
+#  vektor_0 <- rep(0, 10000-length(vektor_pol))
+#  genome_wide_heterozygosity <- mean(c(vektor_pol, vektor_0), na.rm = TRUE)
+#  results_df[i, "Heterozygosity_genomewide"] <- genome_wide_heterozygosity
+
+
   results_df[i,"m"] <- get_the_m ## record the value of 'u' for this particular results file
   
   results_df[i,"reps"] <- get_the_reps ## record the value of 'r' for this particular results file
   
   results_df[i,"seed"] <- get_the_seed ## record the seed for this particular results file (this lets us keep track of individual reps of a give parameter combination), ie, maybe we did 5 reps of u=1e-8 and r=1e-8, so we will have 5 rows for these specific parameter values
+  
+  
+
+
   
   
 }

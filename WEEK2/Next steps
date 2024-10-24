@@ -1,0 +1,10 @@
+Next Steps
+
+- Define Migration Rates 
+- Calculate the Median 
+- Try this for different Extinction Rates -> plot this!! 
+
+- maybe change the genome size to enhance computational power 
+  -> reduce to 1000 bp (and then also adjust the recombination and mutation rate!)
+
+- do like 20 reps -> then it doesn't have a large impact if in one run, the population went extinct meaning one data point is missing.... 

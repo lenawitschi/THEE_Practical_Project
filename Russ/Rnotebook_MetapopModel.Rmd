@@ -29,12 +29,6 @@ repetition <- c(1, 2, 3, 4, 5)
 #make a for loop for all the different values we want to test for m 
 for(m in all_m){
   
-  ## File name for SLiM input file (this is what we will input into SLiM -> directly via bash in R)
- # sh_name <- paste0("SLiM_input_migration",m,".txt")
-  
-  ## Make a code block for SLiM with your parameter values (code block = input into terminal / directly via bash command in R)
-  #metapop_script_basic_test.slim -> slim code document
-  
     for(r in 1:reps){
   slim_code_block <- paste0("slim -d migration=",m," -d repetition=", r," metapop_script_basic_test.slim")
   #slim_code_block -> might not be needed...to still be tested
@@ -42,14 +36,15 @@ for(m in all_m){
 }
   }
 
-
-
-#read.csv("~/Documents/GitHub/THEE_Practical_Project/Russ/slim_muts_output_migration =0.4_seed =3208728106824729961.csv") #File name has to be changed for newly created csv files
-
 #outputs a csv file with all our data :) - (1) the mutation’s id property, (2) the identifier of its mutation type, (3) its position, (4) its selection coefficient, (5) its dominance coefficient, (6) origin subpopulation identifier, (7) origin tick, and (8) prevalence.
 
 
 ```
+
+## Reading in and analysing Data
+
+In this R block, we start with reading in the Data we generated before. We then made a data frame to store all the metrics we need to start further analysis. This Data frame is saved as Example_result. 
+We calculate the Heterozygosities within the populations for all ten patches and then fill in the Dataframe. 
 
 ```{r}
 ## all SLiM output files
@@ -61,50 +56,34 @@ library("hierfstat")
 
 ## make a dataframe to collect results
 ## each row in the dataframe corresponds to the results from a single SLiM simulation run
-## you can add additional columns to the dataframe here if you want to record multiple different metrics (change dim size and dimnames)
 results_df <- data.frame(array(NA, dim = c(length(slim_out_files),13), dimnames = list(c(),c("m","reps","seed","p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10"))))
 
-for(i in 1:length(slim_out_files)){ ## loop over all SLiM results files
+## loop over all SLiM results files
+for(i in 1:length(slim_out_files)){ 
   
   single_file <- slim_out_files[i] ## this is the name of a single SLiM result file
   
-  
   get_the_m <- as.numeric(gsub(".*_migration =|_seed.*", "", single_file))## here we use gsub() to get the value of 'm' that we saved in the name of the results file
-   get_the_reps <- as.numeric(gsub(".*_reps_|_migration.*", "", single_file))
+   get_the_reps <- as.numeric(gsub(".*_reps_|_migration.*", "", single_file)) ## do the same for reps
   
-  get_the_seed <- as.numeric(gsub(".*_seed =|\\.csv","",single_file))
+  get_the_seed <- as.numeric(gsub(".*_seed =|\\.csv","",single_file)) ## and for the seed....
   
   single_file_df <- read.csv(slim_out_files[i], sep=" ", header=F, stringsAsFactors=F) ## read the data in the SLiM results file into R
   
-  ## add in column names here - I was too lazy
+  ## adding in column names
   colnames(single_file_df) <- c("","Max Number of Gen","Number of Generations", "", "Deme", "mut id", "mut typ", "position on gemome", "fitness", "dominance", "original deme", "gen mut occured", "number of indiv. with mut")
-  
 
-  ## calculate whatever metrics you want, eg, allele frequency, Fst, etc
-  
-  ## patch p mutations
-   #for(p in 1:10){
-   # patch_p <- single_file_df[single_file_df[,5]=="pi",]
- # }
-  
-  
-  
-  #data_Fst <- data.frame(array(NA, dim = c(length(slim_out_files),3), dimnames = list(c(),c("Generations","alellefreq1","allelefreq2"))))
- 
-
-  ##CReate a new column with allele frequencies (Add allele freq. in a seperate row (for each file))
-  #1000 is K -> SO for allele freq. you have to calculate x/2000 -> consider we have diploid individuals and K=1000 -> 2000 alleles
+  ##Create a new column with allele frequencies (Add allele freq. in a separate row (for each file))
+  ##1000 is K -> So for allele freq. you have to calculate x/2000 -> consider we have diploid individuals and K=1000 -> 2000 alleles
    single_file_df$Allelefreq <- single_file_df[,13]/2000
    
-   
-   
-   #calculate heterozygosity per locus (2pq -> p is allele freq and q = 1-p) (within deme)
+  ##calculate heterozygosity per locus (2pq -> p is allele freq and q = 1-p) (within deme)
   single_file_df$Heterozygosity_l <- 2*single_file_df[,14]*(1-single_file_df[,14])
   
   ###Next step: convert to genome wide heterozygosity (within deme)
   #na.rm = TRUE ensures that any missing values (NA) in the heterozygosity column are ignored during the calculation.
   
-  #genomewide heterozygosity for the subpopulations
+  #genome wide heterozygosity for the sub populations
   for (x in 1:10){
   sel_row_p <- single_file_df[,5] == paste0("p",x)
   vektor_p_pol <- single_file_df[sel_row_p,15]
@@ -113,23 +92,14 @@ for(i in 1:length(slim_out_files)){ ## loop over all SLiM results files
   results_df[i,paste0("p",x)] <- h_p
   }
   
-  #genomewide heterozygosity for the metapopulation
-#  vektor_pol <- c(single_file_df$Heterozygosity_l)
-#  vektor_0 <- rep(0, 10000-length(vektor_pol))
-#  genome_wide_heterozygosity <- mean(c(vektor_pol, vektor_0), na.rm = TRUE)
-#  results_df[i, "Heterozygosity_genomewide"] <- genome_wide_heterozygosity
 
-
+  ##Fill in the Data Frame  
+  
   results_df[i,"m"] <- get_the_m ## record the value of 'u' for this particular results file
   
   results_df[i,"reps"] <- get_the_reps ## record the value of 'r' for this particular results file
   
   results_df[i,"seed"] <- get_the_seed ## record the seed for this particular results file (this lets us keep track of individual reps of a give parameter combination), ie, maybe we did 5 reps of u=1e-8 and r=1e-8, so we will have 5 rows for these specific parameter values
-  
-  
-
-
-  
   
 }
 
@@ -143,38 +113,25 @@ write.csv(results_df, "Example_Results.csv", row.names = F)
 ```
 
 
+## First Analysis 
+
+Here we first read in our result file before starting to calculate statistical metrics....
+
 ````{r}
 
-
+##Read in the csv file
 Example_results <- read.csv("Example_Results.csv")
 
+##calculate the Means over the 10 subpopulations
 row_mean <- rowMeans(Example_results[,4:13])
-
 Example_results$mean <- row_mean
 
+##calculate the Variance (might need to explain how in more detail)
 sel_col <- Example_results[,4:13]
 row_variances <- apply(sel_col, 1, var)
-
 Example_results$variance <- row_variances
 
-
-
-#m1 <- Example_results[,1]=="0.2"
-#m2 <- Example_results[,1]=="0.3"
-#m3 <- Example_results[,1]=="0.4"
-
-#m1_val <- as.numeric(Example_results[m1, 14])
-#m2_val <- as.numeric(Example_results[m2, 14])
-#m3_val <- as.numeric(Example_results[m3, 14])
-
-#mean1_of_means <- mean(m1_val)
-#mean2_of_means <- mean(m2_val)
-#mean3_of_means <- mean(m3_val)
-
-
-  
-#dev.off()
-
+## Generating the plot (more info...)
 y.y <- seq(min(Example_results$mean)*0.9, max(Example_results$mean)*1.1, length.out = 2)
 
 par(mar=c(6,6,4,2))
@@ -183,7 +140,7 @@ plot( 0, type ="n", las = 1, ylab = "", xlab = "migration rates", cex.lab = 1.2,
 title(ylab = "mean H", line = 4, cex.lab = 1.2)
 
 
-#mean_of_means <- rep(NA, length(all_m))
+##Calculate the Mean of the means of each rep.
 mean_of_means <- numeric(length(all_m))
 result_array <- array(NA, dim = c(length(all_m), 2), dimnames = list(c(), c("mean", "mig")))
 
@@ -199,7 +156,7 @@ for (i in seq_along(all_m)){
 result_array
 
 
-#does not work yer.....
+#does not work yet.....
 #mean_of_variance <- numeric(length(all_m))
 #result_array_var <- array(NA, dim = c(3, 2), dimnames = list(c(), c("variance", "mig")))
 
@@ -215,20 +172,14 @@ result_array
 #result_array_var
 #until here 
 
-
+## adding our data into the generated plot
 points(Example_results$m,Example_results$mean, lwd = 3, col = "pink")
 lines(result_array[,2],result_array[,1],  lwd = 3, col = "red")
 
 legend(x = 0.6, y = 0.0013, legend = c("Mean H for Subpopulations", "Mean of all Means"), lwd = c(3,3), cex = 0.75, col = c("pink", "red"), bty = "n")
 
-#points(x = 0.2, mean1_of_means, lwd = 3, col = "red")
-#points(x = 0.3, mean2_of_means, lwd = 3, col = "red")
-#points(x = 0.4, mean3_of_means, lwd = 3, col = "red")
-
-
-
-
 
 ````
 
+# Plot1: Mean H for subpop for different migration rates
 Since the mean of the variances is so small, we do not show it in this plot. 

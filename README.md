@@ -23,5 +23,7 @@ Our biological Question is the following:
 - only look at the heterozygosity in the demes, and how they vary across them
 - look at different extinction rates -> how does the variance between the subpopulation change?
 - same with migration rates for a fix extinction rate -> how does this influence the variance?
-- plots with mean and variance per run and then take a mean and variance from this data to incorporate it into a final plot 
+    extinction rates: 0, 0.001, 0.1
+- plots with mean and variance per run and then take a mean and variance from this data to incorporate it into a final plot
+  
   

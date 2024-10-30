@@ -11,7 +11,7 @@ initialize() {
 	defineConstant("K", 1000);     // carrying capacity per subpop
 	defineConstant("N", 10);     // number of subpopulations
 	defineConstant("m",migration);			//Migration rate - soft coded
-	defineConstant("e", 0.1);    // subpopulation extinction rate
+	defineConstant("e", 0.0001);    // subpopulation extinction rate =0.1
 	defineConstant("reps", repetition);
 
 	
@@ -19,7 +19,7 @@ initialize() {
 	m1.convertToSubstitution = T; // means that fixed substitutions will "disappear"
 	
 	initializeGenomicElementType("g1", m1, 1.0); // genomic element type g1 is initialized with mutation type m1 and base mutation rate
-	initializeGenomicElement(g1, 0, 99999); // g1 has length 10000 bases
+	initializeGenomicElement(g1, 0, 99999); // g1 has length 10'000 bases
 	initializeMutationRate(1e-7); // specifies mutation rate
 	initializeRecombinationRate(1e-8); // specifies recombination rate
 }
@@ -45,8 +45,14 @@ defineConstant("simID", "migration =" + migration + "_seed =" + getSeed()); // c
 // this starts the life cycle
 early() {
 	// random migration
-	nIndividuals = sum(sim.subpopulations.individualCount); // determine the number of individuals in each subpopulation
-	nMigrants = rpois(1, nIndividuals * m); // determine the number of migrants with a Poisson distribution
+	
+	nIndividuals = sum(sim.subpopulations.individualCount); // determine the number of individuals in each subpopulation$
+	
+	if ((nIndividuals * m)  < 1)
+		nMigrants = 0;
+	else
+		nMigrants = rpois(1, nIndividuals * m); // determine the number of migrants with a Poisson distribution
+	
 	migrants = sample(sim.subpopulations.individuals, nMigrants); // sample the determined number of migrants
 	
 	for (migrant in migrants) // for each migrant...
@@ -59,7 +65,7 @@ early() {
 	// density-dependence and random extinctions
 	for (subpop in sim.subpopulations) // for each subpopulation...
 	{
-		if (runif(1) < e) // determine whether the population survives or goes extinct (probability e)
+		if (runif(1) < e) // determine whether the population survives or goes extinct (probability e) - runif = random draw from uniform distribution
 			sim.killIndividuals(subpop.individuals); // these go extinct
 		else
 			subpop.fitnessScaling = K / subpop.individualCount; // this makes large populations reproduce less
@@ -69,8 +75,13 @@ early() {
 late() { // at the end of every generation
 	if (sum(sim.subpopulations.individualCount) == 0)
 	sim.outputMutations(sim.mutationsOfType(m1),"slim_muts_output_" + "reps_" + reps +"_extinction_cycle_"+sim.cycle +"_"+ simID  + ".csv");
-		//stop("Global extinction in cycle " + sim.cycle + "."); // stop the simulation if the global population went extinct
 }
+
+late() { // at the end of every generation
+	if (sum(sim.subpopulations.individualCount) == 0)
+	stop("Global extinction in cycle " + sim.cycle + "."); // stop the simulation if the global population went extinct -> works when in a different for loop
+}
+
 // at time point 2000
 2000 late() {
 	sim.outputMutations(sim.mutationsOfType(m1),"slim_muts_output_" + "reps_" + reps +"_"+ simID  + ".csv");

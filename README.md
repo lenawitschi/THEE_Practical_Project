@@ -21,14 +21,13 @@ Our biological Question is the following:
 
 **Structure**
 --------------------------------------------------------------------------------------------------------------------
-Folder xxx contains the final version of the SLiM code needed for our Model, aswell as the final R Notebook. 
-?? Add the end Datatables for analysing ?? 
+Folder WEEK1 and WEEK 2 contain the progress of our Project. The folder RUSS contains all the help (in form of code and documents) we recieved from Russ. 
+Folder FINAL contains the final version of the SLiM code needed for our Model, aswell as the final R Notebook. Also included is the Presentation, Report and the Datasets we created, so that it is not mandatory to run all the SLiM simulations. 
 
 
 **Next steps**
 
 - median
-- plot with prob of extinction
-- plot with all lines of different extinction rates 
+- what if only one deme and migration = 1, extinction = 0
   
   

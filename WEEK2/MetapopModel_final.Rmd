@@ -1,0 +1,648 @@
+---
+title: "Metapopulation Migration/Extinction Model"
+author: "Emma Ochsner and Lena Witschi"
+output: html_document
+---
+
+# Introduction
+
+This is the code for our  Metapopulation Migration/Extinction model. We used SLiM to generate  data and R to then analyze it. We first softcode migration rate in R and how many reps we choose and which rates.
+
+
+## Generating Data in SLiM with Parameters from R
+
+```{r eval=FALSE, include=FALSE}
+
+rm(list=ls(all=TRUE)) ## clear R environment
+
+options(scipen = 999) ## scientific notation penalty
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL")
+
+## choose number of reps for each parameter set
+reps <- 20
+
+
+## Choose the different parameter values we are interested in (migration rate)
+all_m <- c(0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.015, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5)
+repetition <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+
+#make a for loop for all the different values we want to test for m 
+for(m in all_m){
+  
+    for(r in 1:reps){
+  slim_code_block <- paste0("slim -d migration=",m," -d repetition=", r,"final_code.slim")
+  #slim_code_block 
+  system(slim_code_block)#call the code block for slim in the terminal via bash, system invokes the OS command specified by command.
+}
+  }
+
+#outputs a csv file with all our data :) - (1) the mutation’s id property, (2) the identifier of its mutation type, (3) its position, (4) its selection coefficient, (5) its dominance coefficient, (6) origin subpopulation identifier, (7) origin tick, and (8) prevalence.
+
+
+```
+
+## Reading in and analysing Data
+
+In this R block, we start with reading in the Data we generated before. We then made a data frame to store all the metrics we need to start further analysis. This Data frame is saved as Example_result. 
+We calculate the Heterozygosities within the populations for all ten patches and then fill in the Dataframe. 
+
+```{r eval=FALSE, include=FALSE}
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/WEEK2")
+
+#define the migration rates
+all_m <- c(0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.015, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5)
+
+## all SLiM output files
+slim_out_files1 <- list.files(pattern = "slim_muts_output")
+slim_out_files <- slim_out_files1[!grepl("extinction", slim_out_files1)]
+
+#install.packages("hierfstat")
+library("hierfstat")
+
+## make a dataframe to collect results
+## each row in the dataframe corresponds to the results from a single SLiM simulation run
+results_df <- data.frame(array(NA, dim = c(length(slim_out_files),13), dimnames = list(c(),c("m","reps","seed","p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10"))))
+
+## loop over all SLiM results files
+for(i in 1:length(slim_out_files)){ 
+  
+  single_file <- slim_out_files[i] ## this is the name of a single SLiM result file
+  
+  get_the_m <- as.numeric(gsub(".*_migration =|_seed.*", "", single_file))## here we use gsub() to get the value of 'm' that we saved in the name of the results file
+   get_the_reps <- as.numeric(gsub(".*_reps_|_migration.*", "", single_file)) ## do the same for reps
+  
+  get_the_seed <- as.numeric(gsub(".*_seed =|\\.csv","",single_file)) ## and for the seed....
+  
+  single_file_df <- read.csv(slim_out_files[i], sep=" ", header=F, stringsAsFactors=F) ## read the data in the SLiM results file into R
+  
+  ## adding in column names
+  colnames(single_file_df) <- c("","Max Number of Gen","Number of Generations", "", "Deme", "mut id", "mut typ", "position on gemome", "fitness", "dominance", "original deme", "gen mut occured", "number of indiv. with mut")
+
+  ##Create a new column with allele frequencies (Add allele freq. in a separate row (for each file))
+  ##1000 is K -> So for allele freq. you have to calculate x/2000 -> consider we have diploid individuals and K=1000 -> 2000 alleles
+   single_file_df$Allelefreq <- single_file_df[,13]/2000
+   
+  ##calculate heterozygosity per locus (2pq -> p is allele freq and q = 1-p) (within deme)
+  single_file_df$Heterozygosity_l <- 2*single_file_df[,14]*(1-single_file_df[,14])
+  
+  ###Next step: convert to genome wide heterozygosity (within deme)
+  #na.rm = TRUE ensures that any missing values (NA) in the heterozygosity column are ignored during the calculation.
+  
+  #genome wide heterozygosity for the sub populations
+  for (x in 1:10){
+  sel_row_p <- single_file_df[,5] == paste0("p",x)
+  vektor_p_pol <- single_file_df[sel_row_p,15]
+  vektor_p_0 <-rep(0,10000 - length(vektor_p_pol))
+  h_p <- mean(c(vektor_p_pol,vektor_p_0), na.rm = TRUE)
+  results_df[i,paste0("p",x)] <- h_p
+  }
+  
+
+  ##Fill in the Data Frame  
+  
+  results_df[i,"m"] <- get_the_m ## record the value of 'u' for this particular results file
+  
+  results_df[i,"reps"] <- get_the_reps ## record the value of 'r' for this particular results file
+  
+  results_df[i,"seed"] <- get_the_seed ## record the seed for this particular results file (this lets us keep track of individual reps of a give parameter combination), ie, maybe we did 5 reps of u=1e-8 and r=1e-8, so we will have 5 rows for these specific parameter values
+  
+}
+
+
+## choose working directory
+## write your results to disc
+setwd("~/Documents/GitHub/THEE_Practical_Project/WEEK2")
+write.csv(results_df, "Example_Results.csv", row.names = F)
+
+
+```
+
+
+# Analysis 
+
+Now we read in our result file (Example_results). Since we have different extinction rates, we calculate all our metrics separately for every rate. After calculating the metrics we plot the results. 
+
+## For e = 0.1
+
+Since the variance is so small, we do not show it in the graph. 
+```{r}
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.1")
+
+#Since we dint want to run the first two chunks, we have to define some values again. 
+all_m <- c(0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.015, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5)
+reps <- 20
+
+##Read in the csv file
+Example_results0.1 <- read.csv("Example_Results.csv")
+
+##calculate the Means over the 10 subpopulations
+row_mean0.1 <- rowMeans(Example_results0.1[,4:13])
+Example_results0.1$mean <- row_mean0.1
+
+##calculate the Variance (might need to explain how in more detail) -> did not include this in the plot. 
+sel_col0.1 <- Example_results0.1[,4:13]
+row_variances0.1 <- apply(sel_col0.1, 1, var)
+Example_results0.1$variance <- row_variances0.1
+
+## Generating the plot 
+
+y.y <- seq(min(Example_results0.1$mean)*0.9, max(Example_results0.1$mean)*1.1, length.out = 2) #used to define the y axis of the plot
+
+#make the plot
+par(mar=c(6,6,6,6))
+plot( 0, log = "x", type ="n", las = 1, ylab = "", xlab = "migration rates", cex.lab = 1.2, main = "Heterozygosity for different migration rates with e = 0.1", cex.main = 1.2, xlim = c(1e-6,1), ylim = y.y, lwd = 2)
+title(ylab = "mean H", line = 4, cex.lab = 1.2) #title of the y Axis
+
+
+##Calculate the Mean of the means of each rep.
+mean_of_means0.1 <- numeric(length(all_m))
+#create an empty array, where we can fill in our calculated data
+result_array0.1 <- array(NA, dim = c(length(all_m), 2), dimnames = list(c(), c("mean", "mig")))
+
+#fill in the array we defined before
+for (i in seq_along(all_m)){
+  m <- all_m[i]  # Get the current migration rate
+  mig0.1 <- Example_results0.1[, 1] == m  # Get the logical vector for the current migration rate
+  mig_val0.1 <- as.numeric(Example_results0.1[mig0.1, 14])  # Extract the corresponding values from the 14th column
+    mean_of_means0.1[i] <- mean(mig_val0.1, na.rm = TRUE)  # Compute mean, removing NA values
+  # Store the mean and migration rate in the result array
+  result_array0.1[i, 1] <- mean_of_means0.1[i]  # Fill the mean column
+  result_array0.1[i, 2] <- m  # Fill the migration rate column
+}
+result_array0.1
+
+## adding our data into the generated plot
+points(Example_results0.1$m,Example_results0.1$mean, lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.3)) #shows the outcome of different runs as points
+lines(result_array0.1[,2],result_array0.1[,1],  lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.7)) #shows the mean of means as a line 
+
+#Make a legend for the plot
+legend("topleft", legend = c("Mean H for Subpopulations", "Mean of all Means"), cex = 0.75, col = c(adjustcolor("#009E73", alpha.f = 0.3), adjustcolor("#009E73", alpha.f = 0.7)), pch = c(1,NA), lty = c(NA, 1), pt.cex = 1, lwd = 3, bty = "n")
+
+
+```
+
+
+## For e = 0.01
+
+Here we used the same code to generate the plot as before, but with the data for e = 0.01
+```{r}
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.01")
+
+##Read in the csv file
+Example_results0.01 <- read.csv("Example_Results.csv")
+
+##calculate the Means over the 10 subpopulations
+row_mean0.01 <- rowMeans(Example_results0.01[,4:13])
+Example_results0.01$mean <- row_mean0.01
+
+##calculate the Variance (might need to explain how in more detail)
+sel_col0.01 <- Example_results0.01[,4:13]
+row_variances0.01 <- apply(sel_col0.01, 1, var)
+Example_results0.01$variance0.01 <- row_variances0.01
+
+## Generating the plot (more info...)
+y.y <- seq(min(Example_results0.01$mean)*0.9, max(Example_results0.01$mean)*1.1, length.out = 2)
+
+par(mar=c(6,6,6,6))
+plot( 0, log = "x", type ="n", las = 1, ylab = "", xlab = "migration rates", cex.lab = 1.2, main = "Heterozygosity for different migration rates with e = 0.01", cex.main = 1.2, xlim = c(1e-6,1), ylim = y.y, lwd = 2)
+title(ylab = "mean H", line = 4, cex.lab = 1.2)
+
+
+##Calculate the Mean of the means of each rep.
+mean_of_means0.01 <- numeric(length(all_m))
+result_array0.01 <- array(NA, dim = c(length(all_m), 2), dimnames = list(c(), c("mean", "mig")))
+
+for (i in seq_along(all_m)){
+  m <- all_m[i]  # Get the current migration rate
+  mig0.01 <- Example_results0.01[, 1] == m  # Get the logical vector for the current migration rate
+  mig_val0.01 <- as.numeric(Example_results0.01[mig0.01, 14])  # Extract the corresponding values from the 14th column
+    mean_of_means0.01[i] <- mean(mig_val0.01, na.rm = TRUE)  # Compute mean, removing NA values
+  # Store the mean and migration rate in the result array
+  result_array0.01[i, 1] <- mean_of_means0.01[i]  # Fill the mean column
+  result_array0.01[i, 2] <- m  # Fill the migration rate column
+}
+result_array0.01
+
+## adding our data into the generated plot
+points(Example_results0.01$m,Example_results0.01$mean, lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.3))
+lines(result_array0.01[,2],result_array0.01[,1],  lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.7))
+
+legend("topleft", legend = c("Mean H for Subpopulations", "Mean of all Means"), cex = 0.75, col = c(adjustcolor("#009E73", alpha.f = 0.3), adjustcolor("#009E73", alpha.f = 0.7)), pch = c(1,NA), lty = c(NA, 1), pt.cex = 1, lwd = 3, bty = "n")
+
+
+```
+
+## For e = 0.001
+
+Here we used the same code to generate the plot as before, but with the data for e = 0.001
+
+```{r}
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.001")
+
+##Read in the csv file
+Example_results0.001 <- read.csv("Example_Results.csv")
+
+##calculate the Means over the 10 subpopulations
+row_mean0.001 <- rowMeans(Example_results0.001[,4:13])
+Example_results0.001$mean <- row_mean0.001
+
+##calculate the Variance (might need to explain how in more detail)
+sel_col0.001 <- Example_results0.001[,4:13]
+row_variances0.001 <- apply(sel_col0.001, 1, var)
+Example_results0.001$variance <- row_variances0.001
+
+## Generating the plot (more info...)
+y.y <- seq(min(Example_results0.001$mean)*0.9, max(Example_results0.001$mean)*1.1, length.out = 2)
+
+par(mar=c(6,6,6,6))
+plot( 0, log = "x", type ="n", las = 1, ylab = "", xlab = "migration rates", cex.lab = 1.2, main = "Heterozygosity for different migration rates with e = 0.001", cex.main = 1.2, xlim = c(1e-6,1), ylim = y.y, lwd = 2)
+title(ylab = "mean H", line = 4, cex.lab = 1.2)
+
+
+##Calculate the Mean of the means of each rep.
+mean_of_means0.001 <- numeric(length(all_m))
+result_array0.001 <- array(NA, dim = c(length(all_m), 2), dimnames = list(c(), c("mean", "mig")))
+
+for (i in seq_along(all_m)){
+  m <- all_m[i]  # Get the current migration rate
+  mig0.001 <- Example_results0.001[, 1] == m  # Get the logical vector for the current migration rate
+  mig_val0.001 <- as.numeric(Example_results0.001[mig0.001, 14])  # Extract the corresponding values from the 14th column
+    mean_of_means0.001[i] <- mean(mig_val0.001, na.rm = TRUE)  # Compute mean, removing NA values
+  # Store the mean and migration rate in the result array
+  result_array0.001[i, 1] <- mean_of_means0.001[i]  # Fill the mean column
+  result_array0.001[i, 2] <- m  # Fill the migration rate column
+}
+result_array0.001
+
+## adding our data into the generated plot
+points(Example_results0.001$m,Example_results0.001$mean, lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.3))
+lines(result_array0.001[,2],result_array0.001[,1],  lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.7
+                                                                               
+                                                                               ))
+
+legend("topleft", legend = c("Mean H for Subpopulations", "Mean of all Means"), cex = 0.75, col = c(adjustcolor("#009E73", alpha.f = 0.3), adjustcolor("#009E73", alpha.f = 0.7)), pch = c(1,NA), lty = c(NA, 1), pt.cex = 1, lwd = 3, bty = "n")
+
+
+```
+
+
+## For e = 0.0001
+
+Here we used the same code to generate the plot as before, but with the data for e = 0.001
+```{r}
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.0001")
+
+##Read in the csv file
+Example_results0.0001 <- read.csv("Example_Results.csv")
+
+##calculate the Means over the 10 subpopulations
+row_mean0.0001 <- rowMeans(Example_results0.0001[,4:13])
+Example_results0.0001$mean <- row_mean0.0001
+
+##calculate the Variance (might need to explain how in more detail)
+sel_col0.0001 <- Example_results0.0001[,4:13]
+row_variances0.0001 <- apply(sel_col0.0001, 1, var)
+Example_results0.0001$variance <- row_variances0.0001
+
+## Generating the plot (more info...)
+y.y <- seq(min(Example_results0.0001$mean)*0.9, max(Example_results0.0001$mean)*1.1, length.out = 2)
+
+par(mar=c(6,6,6,6))
+plot( 0, log = "x", type ="n", las = 1, ylab = "", xlab = "migration rates", cex.lab = 1.2, main = "Heterozygosity for different migration rates with e = 0.0001", cex.main = 1.2, xlim = c(1e-6,1), ylim = y.y, lwd = 2)
+title(ylab = "mean H", line = 4, cex.lab = 1.2)
+
+
+##Calculate the Mean of the means of each rep.
+mean_of_means0.0001 <- numeric(length(all_m))
+result_array0.0001 <- array(NA, dim = c(length(all_m), 2), dimnames = list(c(), c("mean", "mig")))
+
+for (i in seq_along(all_m)){
+  m <- all_m[i]  # Get the current migration rate
+  mig0.0001 <- Example_results0.0001[, 1] == m  # Get the logical vector for the current migration rate
+  mig_val0.0001 <- as.numeric(Example_results0.0001[mig0.0001, 14])  # Extract the corresponding values from the 14th column
+    mean_of_means0.0001[i] <- mean(mig_val0.0001, na.rm = TRUE)  # Compute mean, removing NA values
+  # Store the mean and migration rate in the result array
+  result_array0.0001[i, 1] <- mean_of_means0.0001[i]  # Fill the mean column
+  result_array0.0001[i, 2] <- m  # Fill the migration rate column
+}
+result_array0.0001
+
+## adding our data into the generated plot
+points(Example_results0.0001$m,Example_results0.0001$mean, lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.3))
+lines(result_array0.0001[,2],result_array0.0001[,1],  lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.7))
+
+legend("topleft", legend = c("Mean H for Subpopulations", "Mean of all Means"), cex = 0.75, col = c(adjustcolor("#009E73", alpha.f = 0.3), adjustcolor("#009E73", alpha.f = 0.7)), pch = c(1,NA), lty = c(NA, 1), pt.cex = 1, lwd = 3, bty = "n")
+
+
+```
+
+
+
+## For e = 0
+
+Here we used the same code to generate the plot as before, but with the data for e = 0
+```{r}
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0")
+
+##Read in the csv file
+Example_results0 <- read.csv("Example_Results.csv")
+
+##calculate the Means over the 10 subpopulations
+row_mean0 <- rowMeans(Example_results0[,4:13])
+Example_results0$mean <- row_mean0
+
+##calculate the Variance (might need to explain how in more detail)
+sel_col0 <- Example_results0[,4:13]
+row_variances0 <- apply(sel_col0, 1, var)
+Example_results0$variance <- row_variances0
+
+## Generating the plot (more info...)
+y.y <- seq(min(Example_results0$mean)*0.9, max(Example_results0$mean)*1.1, length.out = 2)
+
+par(mar=c(6,6,6,6))
+plot( 0, log = "x", type ="n", las = 1, ylab = "", xlab = "migration rates", cex.lab = 1.2, main = "Heterozygosity for different migration rates with e = 0", cex.main = 1.2, xlim = c(1e-6,1), ylim = y.y, lwd = 2)
+title(ylab = "mean H", line = 4, cex.lab = 1.2)
+
+
+##Calculate the Mean of the means of each rep.
+mean_of_means0 <- numeric(length(all_m))
+result_array0 <- array(NA, dim = c(length(all_m), 2), dimnames = list(c(), c("mean", "mig")))
+
+for (i in seq_along(all_m)){
+  m <- all_m[i]  # Get the current migration rate
+  mig0 <- Example_results0[, 1] == m  # Get the logical vector for the current migration rate
+  mig_val0 <- as.numeric(Example_results0[mig0, 14])  # Extract the corresponding values from the 14th column
+  mean_of_means0[i] <- mean(mig_val0, na.rm = TRUE)  # Compute mean, removing NA values
+  # Store the mean and migration rate in the result array
+  result_array0[i, 1] <- mean_of_means0[i]  # Fill the mean column
+  result_array0[i, 2] <- m  # Fill the migration rate column
+}
+result_array0
+
+
+## adding our data into the generated plot
+points(Example_results0$m,Example_results0$mean, lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.3))
+lines(result_array0[,2],result_array0[,1],  lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.7))
+
+legend("topleft", legend = c("Mean H for Subpopulations", "Mean of all Means"), cex = 0.75, col = c(adjustcolor("#009E73", alpha.f = 0.3), adjustcolor("#009E73", alpha.f = 0.7)), pch = c(1,NA), lty = c(NA, 1), pt.cex = 1, lwd = 3, bty = "n")
+
+
+```
+
+
+We now have 5 plots for the 5 different extinction rates. We will combine them into one plot a bit further down in the R script. 
+
+
+# Extinction Probabilities
+
+To be able to say something about the probability of extinction of the metapopulation, we did the following plots:
+
+## For e = 0.1
+```{r}
+
+#Extinction probability for e = 0.1
+# Define the directory where the files are stored
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.1")
+
+#create a list where we only have the files of the runs which ended in extinction
+files_ex1 <- list.files(pattern = "slim_muts_output")
+files_ex <- files_ex1[grepl("extinction", files_ex1)] #grepl allows you to search for a pattern in the filename
+
+#create an empty matrix to after store our results
+extinctions0.1 <- array(NA, dim = c(length(all_m), 2), dimnames = list(NULL, c("migration rate", "number of extinctions")))
+
+# Initialize a vector to store counts
+countsimextinct <- numeric(length(all_m)) #this vector will be used to save the number of simulations in which extinction happened
+
+# fill in the `extinctions` array
+for (i in seq_along(all_m)) {
+  m <- all_m[i] # Get the current migration rate
+  get_the_m <- as.numeric(gsub(".*_migration =|_seed.*", "", files_ex)) #get all the files (from those which ended in extinction) which have the current migration rate in the name. 
+  
+  #fill the empty arrow with the number of files which went extinct and show the current m
+  countextinctions0.1 <- sum(get_the_m == m)
+  
+  # Fill in the `extinctions` table
+  extinctions0.1[i, 1] <- m  # Migration rate
+  extinctions0.1[i, 2] <- countextinctions0.1  # Number of extinctions
+}
+
+
+#Make the plot
+par(mar=c(6,6,6,6))
+plot( 0, log = "x", type ="n", las = 1, ylab = "", xlab = "migration rates", cex.lab = 1.2, main = "Extinctionprobability with e = 0.1 for different Migration Rates", cex.main = 1.2, xlim = c(1e-6,1), ylim = c(0,20), lwd = 2)
+title(ylab = "number of extinctions", line = 4, cex.lab = 1.2)
+
+#create a line with the created data
+lines(extinctions0.1[,1],extinctions0.1[,2],  lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.7))
+
+```
+
+## For e = 0.01
+
+Here we used the exact same code as before but with the data of e = 0.01
+```{r}
+
+#Extinction probability fpr e = 0.1
+# Define the directory where the files are stored
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.01")
+
+files_ex1 <- list.files(pattern = "slim_muts_output")
+files_ex <- files_ex1[grepl("extinction", files_ex1)]
+
+#number_of_extinctions <- numeric(length(all_m))
+extinctions0.01 <- array(NA, dim = c(length(all_m), 2), dimnames = list(NULL, c("migration rate", "number of extinctions")))
+
+# Initialize vectors to store counts
+countsimextinct <- numeric(length(all_m)) #this vector will be used to save the number of simulations in which extinction happened
+#number_of_extinctions <- numeric(length(all_m))
+
+# Populate the `extinctions` array
+for (i in seq_along(all_m)) {
+  m <- all_m[i]
+  get_the_m <- as.numeric(gsub(".*_migration =|_seed.*", "", files_ex))
+  #m <- get_the_m[i]
+  
+  countextinctions0.01 <- sum(get_the_m == m)
+  
+  # Fill in the `extinctions` table
+  extinctions0.01[i, 1] <- m  # Migration rate
+  extinctions0.01[i, 2] <- countextinctions0.01  # Number of extinctions
+}
+
+
+
+par(mar=c(6,6,6,6))
+plot( 0, log = "x", type ="n", las = 1, ylab = "", xlab = "migration rates", cex.lab = 1.2,main = "Extinctionprobability with e = 0.01 for different Migration Rates", cex.main = 1.2, xlim = c(1e-6,1), ylim = c(0,20), lwd = 2)
+title(ylab = "number of extinctions", line = 4, cex.lab = 1.2)
+
+lines(extinctions0.01[,1],extinctions0.01[,2],  lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.7))
+
+```
+
+## For e = 0.001
+
+Here we used the exact same code as before but with the data of e = 0.001
+```{r}
+
+#Extinction probability fpr e = 0.1
+# Define the directory where the files are stored
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.001")
+
+files_ex1 <- list.files(pattern = "slim_muts_output")
+files_ex <- files_ex1[grepl("extinction", files_ex1)]
+
+#number_of_extinctions <- numeric(length(all_m))
+extinctions0.001 <- array(NA, dim = c(length(all_m), 2), dimnames = list(NULL, c("migration rate", "number of extinctions")))
+
+# Initialize vectors to store counts
+countsimextinct <- numeric(length(all_m)) #this vector will be used to save the number of simulations in which extinction happened
+#number_of_extinctions <- numeric(length(all_m))
+
+# Populate the `extinctions` array
+for (i in seq_along(all_m)) {
+  m <- all_m[i]
+  get_the_m <- as.numeric(gsub(".*_migration =|_seed.*", "", files_ex))
+  #m <- get_the_m[i]
+  
+  countextinctions0.001 <- sum(get_the_m == m)
+  
+  # Fill in the `extinctions` table
+  extinctions0.001[i, 1] <- m  # Migration rate
+  extinctions0.001[i, 2] <- countextinctions0.001  # Number of extinctions
+}
+
+
+
+par(mar=c(6,6,6,6))
+plot( 0, log = "x", type ="n", las = 1, ylab = "", xlab = "migration rates", cex.lab = 1.2, main = "Extinctionprobability with e = 0.001 for different Migration Rates", cex.main = 1.2, xlim = c(1e-6,1), ylim = c(0,20), lwd = 2)
+title(ylab = "number of extinctions", line = 4, cex.lab = 1.2)
+
+lines(extinctions0.001[,1],extinctions0.001[,2],  lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.7))
+
+```
+
+## For e = 0.0001
+
+Here we used the exact same code as before but with the data of e = 0.0001
+```{r}
+
+#Extinction probability fpr e = 0.0001
+# Define the directory where the files are stored
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.0001")
+
+files_ex1 <- list.files(pattern = "slim_muts_output")
+files_ex <- files_ex1[grepl("extinction", files_ex1)]
+
+#number_of_extinctions <- numeric(length(all_m))
+extinctions0.0001 <- array(NA, dim = c(length(all_m), 2), dimnames = list(NULL, c("migration rate", "number of extinctions")))
+
+# Initialize vectors to store counts
+countsimextinct <- numeric(length(all_m)) #this vector will be used to save the number of simulations in which extinction happened
+#number_of_extinctions <- numeric(length(all_m))
+
+# Populate the `extinctions` array
+for (i in seq_along(all_m)) {
+  m <- all_m[i]
+  get_the_m <- as.numeric(gsub(".*_migration =|_seed.*", "", files_ex))
+  #m <- get_the_m[i]
+  
+  countextinctions0.0001 <- sum(get_the_m == m)
+  
+  # Fill in the `extinctions` table
+  extinctions0.0001[i, 1] <- m  # Migration rate
+  extinctions0.0001[i, 2] <- countextinctions0.0001  # Number of extinctions
+}
+
+
+
+par(mar=c(6,6,6,6))
+plot( 0, log = "x", type ="n", las = 1, ylab = "", xlab = "migration rates", cex.lab = 1.2, main = "Extinctionprobability with e = 0.0001 for different Migration Rates", cex.main = 1.2, xlim = c(1e-6,1), ylim = c(0,20), lwd = 2)
+title(ylab = "number of extinctions", line = 4, cex.lab = 1.2)
+
+lines(extinctions0.0001[,1],extinctions0.0001[,2],  lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.7))
+
+```
+
+## Heterozygosity for all extinction rates
+
+Combining all the graphs which show the Heterozygosity for different Extinction Rates
+```{r}
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.1")
+
+#make the plot
+par(mar=c(6,6,6,6))
+plot( 0, log = "x", type ="n", las = 1, ylab = "", xlab = "migration rates", cex.lab = 1.2, cex.main = 1.6,
+     main = "Heterozygosity for different migration rates", cex.main = 1.2, xlim = c(1e-6,1), ylim = y.y, lwd = 2)
+title(ylab = "mean H", line = 4, cex.lab = 1.2)
+
+## adding our data into the generated plot
+points(Example_results0.1$m,Example_results0.1$mean, lwd = 3, col = adjustcolor("#CC79A7", alpha.f = 0.2))
+lines(result_array0.1[,2],result_array0.1[,1],  lwd = 3, col = adjustcolor(col = "#CC79A7",alpha.f = 0.7))
+#the command adjustcolor is used to make the symbols transparent with a value of alpha.f
+
+#create a legend
+legend("topleft", legend = c("Mean of all Means, e = 0.1", "Mean of all Means, e = 0.01", "Mean of all Means, e = 0.001", "Mean of all Means, e = 0.0001", "Mean of all Means, e = 0"), lwd = c(3,3), cex = 0.5, col = c("#CC79A7", "#009E73", "black",  "skyblue", "blue"), bty = "n")
+
+
+#to add the other lines, we always have to change the working directory since we saved the files of the different runs in different folders.
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.01")
+points(Example_results0.01$m,Example_results0.01$mean, lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.1))
+lines(result_array0.01[,2],result_array0.01[,1],  lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.7))
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.001")
+points(Example_results0.001$m,Example_results0.001$mean, lwd = 3, col = adjustcolor("black", alpha.f = 0.1))
+lines(result_array0.001[,2],result_array0.001[,1],  lwd = 3, col = adjustcolor("black",  alpha.f = 0.7))
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.0001")
+points(Example_results0.0001$m,Example_results0.0001$mean, lwd = 3, col = adjustcolor("skyblue", alpha.f = 0.1))
+lines(result_array0.0001[,2],result_array0.0001[,1],  lwd = 3, col = adjustcolor("skyblue", alpha.f = 0.7))
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0")
+points(Example_results0$m,Example_results0$mean, lwd = 3, col = adjustcolor("blue", alpha.f = 0.1))
+lines(result_array0[,2],result_array0[,1],  lwd = 3, col = adjustcolor("blue", alpha.f = 0.7))
+
+
+```
+
+
+## Extinction probability for all extinction rates
+
+```{r}
+
+# Define the directory where the files are stored 8first for e = 0.1)
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.1")
+
+#make the plot
+par(mar=c(6,6,6,6))
+plot( 0, log = "x", type ="n", las = 1, ylab = "", xlab = "migration rates", cex.lab = 1.2, cex.main = 1.6,main = "Extinction Probability for different migration rates", cex.main = 1.1, xlim = c(1e-6,1), ylim = c(0,1), lwd = 2)
+title(ylab = "fraction of extinctions", line = 4, cex.lab = 1.2)
+
+#Add the legend
+legend("topright", legend = c("e = 0.1", "e = 0.01", "e = 0.001", "e = 0.0001"), lwd = c(3,3), cex = 0.7, col = c("#CC79A7", "#009E73", "black",  "skyblue"), bty = "n")
+
+points(extinctions0.1[,1],extinctions0.1[,2]/reps, pch = 16, col = "#CC79A7")  # Add points
+lines(extinctions0.1[,1],extinctions0.1[,2]/reps,  lty = 2, col = adjustcolor("#CC79A7", alpha.f = 0.7)) # Add a dashed line connecting the points
+
+#to add the other lines, we always have to change the working directory since we saved the files of the differetn runs in different folders.
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.01")
+points(extinctions0.01[,1],extinctions0.01[,2]/reps, pch = 16, col = "#009E73")
+lines(extinctions0.01[,1],extinctions0.01[,2]/reps,  lty = 2, col = adjustcolor("#009E73", alpha.f = 0.7))
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.001")
+points(extinctions0.001[,1],extinctions0.001[,2]/reps, pch = 16, col = "black")
+lines(extinctions0.001[,1],extinctions0.001[,2]/reps,  lty = 2, col = adjustcolor("black", alpha.f = 0.7))
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.0001")
+points(extinctions0.0001[,1],extinctions0.0001[,2]/reps, pch = 16, col = "skyblue")
+lines(extinctions0.0001[,1],extinctions0.0001[,2]/reps,  lty = 2, col = adjustcolor("skyblue", alpha.f = 0.7))
+
+
+```

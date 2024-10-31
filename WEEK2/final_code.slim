@@ -1,0 +1,90 @@
+// Keywords: nonWF, non-Wright-Fisher, migration, dispersal
+
+// this block defines the Slim mode to use and the model parameters
+initialize() {
+// In these few lines I 'soft-code' variables in the SLiM script. Pass real values into 'm' in your R script
+	
+
+	
+	//Hard code for other variables
+	initializeSLiMModelType("nonWF"); // means that population size can change dynamically
+	defineConstant("K", 1000);     // carrying capacity per subpop
+	defineConstant("N", 10);     // number of subpopulations
+	defineConstant("m",migration);			//Migration rate - soft coded
+	defineConstant("e", 0.0001);    // subpopulation extinction rate =0.1
+	defineConstant("reps", repetition);
+
+	
+	initializeMutationType("m1", 0.5, "f", 0.0); // mutation type m1 is has dominance coefficient 0.5 and is neutral (fitness 0.0)
+	m1.convertToSubstitution = T; // means that fixed substitutions will "disappear"
+	
+	initializeGenomicElementType("g1", m1, 1.0); // genomic element type g1 is initialized with mutation type m1 and base mutation rate
+	initializeGenomicElement(g1, 0, 99999); // g1 has length 10'000 bases
+	initializeMutationRate(1e-7); // specifies mutation rate
+	initializeRecombinationRate(1e-8); // specifies recombination rate
+}
+
+// reproduction occurs between the early() and late() life stages automatically according to this rule
+reproduction() {
+	subpop.addCrossed(individual, subpop.sampleIndividuals(1)); // reproduction occurs by random mating within the subpopulation
+}
+
+
+1 early() {
+catn("parameters: migration=" + migration +  " seed=" + getSeed()); // print out parameter values - I just do this to doublecheck I am running the values I want
+defineConstant("simID", "migration =" + migration + "_seed =" + getSeed()); // create a variable that contains all the values of the soft-coded variables. When I output results files I name them with the parameter values so that I always know what results are from what values
+}
+
+
+// initialization of the metapopulation
+1 early() {
+	for (i in 1:N)
+		sim.addSubpop(i, (i == 1) ? K else K); // this creates 10 subpopulations where the first one is filled with 10 individuals and all others are empty
+}
+
+// this starts the life cycle
+early() {
+	// random migration
+	
+	nIndividuals = sum(sim.subpopulations.individualCount); // determine the number of individuals in each subpopulation$
+	// makes sure, that if nIndividuals * m is smaller than 1 (= 0 individual), there will be 0 migrants
+	if ((nIndividuals * m)  < 1) 
+		nMigrants = 0;
+	else
+		nMigrants = rpois(1, nIndividuals * m); // determine the number of migrants with a Poisson distribution
+	
+	migrants = sample(sim.subpopulations.individuals, nMigrants); // sample the determined number of migrants
+	
+	for (migrant in migrants) // for each migrant...
+	{
+		do dest = sample(sim.subpopulations, 1); // determine its destination
+		while (dest == migrant.subpopulation); //make sure that the migrant is not accidentally moved back to its origin
+		dest.takeMigrants(migrant); // move it to the new subpopulation
+	}
+	
+	// density-dependence and random extinctions
+	for (subpop in sim.subpopulations) // for each subpopulation...
+	{
+		if (runif(1) < e) // determine whether the population survives or goes extinct (probability e) - runif = random draw from uniform distribution
+			sim.killIndividuals(subpop.individuals); // these go extinct
+		else
+			subpop.fitnessScaling = K / subpop.individualCount; // this makes large populations reproduce less
+	}
+}
+// this is where reproduction occurs
+late() { // at the end of every generation
+	if (sum(sim.subpopulations.individualCount) == 0)
+	sim.outputMutations(sim.mutationsOfType(m1),"slim_muts_output_" + "reps_" + reps +"_extinction_cycle_"+sim.cycle +"_"+ simID  + ".csv");
+}
+
+late() { // at the end of every generation
+	if (sum(sim.subpopulations.individualCount) == 0)
+	stop("Global extinction in cycle " + sim.cycle + "."); // stop the simulation if the global population went extinct -> works when in a different for loop
+}
+
+// at time point 2000
+2000 late() {
+	sim.outputMutations(sim.mutationsOfType(m1),"slim_muts_output_" + "reps_" + reps +"_"+ simID  + ".csv");
+	// output entire simulation results (if need be)); 
+	// if it survives for 2000 generations report the number of fixed mutations
+}

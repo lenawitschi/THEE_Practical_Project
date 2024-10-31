@@ -19,18 +19,18 @@ options(scipen = 999) ## scientific notation penalty
 setwd("~/Documents/GitHub/THEE_Practical_Project/WEEK2")
 
 ## choose number of reps for each parameter set
-reps <- 5
+reps <- 20
 
 
 ## Choose the different parameter values we are interested in (migration rate)
-all_m <- c(0.1, 0.2, 0.3, 0.4)
-repetition <- c(1, 2, 3, 4, 5)
+all_m <- c(0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.015, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5)
+repetition <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
 
 #make a for loop for all the different values we want to test for m 
 for(m in all_m){
   
     for(r in 1:reps){
-  slim_code_block <- paste0("slim -d migration=",m," -d repetition=", r," metapop_script_basic_test.slim")
+  slim_code_block <- paste0("slim -d migration=",m," -d repetition=", r," script_final_model.slim")
   #slim_code_block -> might not be needed...to still be tested
   system(slim_code_block)#call the code block for slim in the terminal via bash, system invokes the OS command specified by command.
 }
@@ -117,7 +117,11 @@ write.csv(results_df, "Example_Results.csv", row.names = F)
 
 Here we first read in our result file before starting to calculate statistical metrics....
 
-````{r}
+(For e = 0.1)
+
+```{r}
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.1")
 
 ##Read in the csv file
 Example_results <- read.csv("Example_Results.csv")
@@ -134,9 +138,9 @@ Example_results$variance <- row_variances
 ## Generating the plot (more info...)
 y.y <- seq(min(Example_results$mean)*0.9, max(Example_results$mean)*1.1, length.out = 2)
 
-par(mar=c(6,6,4,2))
-plot( 0, type ="n", las = 1, ylab = "", xlab = "migration rates", cex.lab = 1.2, cex.main = 1.6,
-     main = "Heterozygosity for different migration rates", xlim = c(0,1), ylim = y.y, lwd = 2)
+par(mar=c(6,6,6,6))
+plot( 0, log = "x", type ="n", las = 1, ylab = "", xlab = "migration rates", cex.lab = 1.2, cex.main = 1.6,
+     main = "Heterozygosity for different migration rates with e = 0.1", cex.main = 1.5, xlim = c(1e-6,1), ylim = y.y, lwd = 2)
 title(ylab = "mean H", line = 4, cex.lab = 1.2)
 
 
@@ -176,10 +180,143 @@ result_array
 points(Example_results$m,Example_results$mean, lwd = 3, col = "pink")
 lines(result_array[,2],result_array[,1],  lwd = 3, col = "red")
 
-legend(x = 0.6, y = 0.0013, legend = c("Mean H for Subpopulations", "Mean of all Means"), lwd = c(3,3), cex = 0.75, col = c("pink", "red"), bty = "n")
+legend(x = 0.000001, y = 0.002, legend = c("Mean H for Subpopulations", "Mean of all Means"), lwd = c(3,3), cex = 0.75, col = c("pink", "red"), bty = "n")
 
 
-````
+```
 
 # Plot1: Mean H for subpop for different migration rates
 Since the mean of the variances is so small, we do not show it in this plot. 
+
+
+
+```{r}
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.01")
+
+##Read in the csv file
+Example_results <- read.csv("Example_Results.csv")
+
+##calculate the Means over the 10 subpopulations
+row_mean <- rowMeans(Example_results[,4:13])
+Example_results$mean <- row_mean
+
+##calculate the Variance (might need to explain how in more detail)
+sel_col <- Example_results[,4:13]
+row_variances <- apply(sel_col, 1, var)
+Example_results$variance <- row_variances
+
+## Generating the plot (more info...)
+y.y <- seq(min(Example_results$mean)*0.9, max(Example_results$mean)*1.1, length.out = 2)
+
+par(mar=c(6,6,6,6))
+plot( 0, log = "x", type ="n", las = 1, ylab = "", xlab = "migration rates", cex.lab = 1.2, cex.main = 1.6,
+     main = "Heterozygosity for different migration rates with e = 0.01", cex.main = 1.5, xlim = c(1e-6,1), ylim = y.y, lwd = 2)
+title(ylab = "mean H", line = 4, cex.lab = 1.2)
+
+
+##Calculate the Mean of the means of each rep.
+mean_of_means <- numeric(length(all_m))
+result_array <- array(NA, dim = c(length(all_m), 2), dimnames = list(c(), c("mean", "mig")))
+
+for (i in seq_along(all_m)){
+  m <- all_m[i]  # Get the current migration rate
+  mig <- Example_results[, 1] == m  # Get the logical vector for the current migration rate
+  mig_val <- as.numeric(Example_results[mig, 14])  # Extract the corresponding values from the 14th column
+    mean_of_means[i] <- mean(mig_val, na.rm = TRUE)  # Compute mean, removing NA values
+  # Store the mean and migration rate in the result array
+  result_array[i, 1] <- mean_of_means[i]  # Fill the mean column
+  result_array[i, 2] <- m  # Fill the migration rate column
+}
+result_array
+
+
+#does not work yet.....
+#mean_of_variance <- numeric(length(all_m))
+#result_array_var <- array(NA, dim = c(3, 2), dimnames = list(c(), c("variance", "mig")))
+
+#for (i in seq_along(all_m)){
+  #m <- all_m[i]  # Get the current migration rate
+  #mig_var <- Example_results[, 1] == m  # Get the logical vector for the current migration rate
+  #mig_val_var <- as.numeric(Example_results[mig_var, 15])  # Extract the corresponding values from the 14th column
+   # mean_of_variance[i] <- mean(mig_val_var, na.rm = TRUE)  # Compute mean, removing NA values
+  # Store the mean and migration rate in the result array
+  #result_array_var[i, 1] <- mean_of_variance[i]  # Fill the mean column
+  #result_array_var[i, 2] <- m  # Fill the migration rate column
+#}
+#result_array_var
+#until here 
+
+## adding our data into the generated plot
+points(Example_results$m,Example_results$mean, lwd = 3, col = "pink")
+lines(result_array[,2],result_array[,1],  lwd = 3, col = "red")
+
+legend(x = 0.000001, y = 0.002, legend = c("Mean H for Subpopulations", "Mean of all Means"), lwd = c(3,3), cex = 0.75, col = c("pink", "red"), bty = "n")
+
+
+```
+
+
+
+
+
+
+
+
+
+Extinction Prob. 
+
+```{r}
+
+# Define the directory where the files are stored
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.1")
+
+files_ex1 <- list.files(pattern = "slim_muts_output")
+files_ex <- files_ex1[grepl("extinction", files_ex1)]
+
+
+
+
+
+
+
+
+# List all files in the directory
+files <- list.files(path = file_directory, pattern = "\\extinction$", full.names = TRUE)
+
+# Initialize an empty data frame to store migration rates and extinction counts
+results <- data.frame(migration_rate = numeric(), extinctions = integer())
+
+# Loop through each file
+for (file in files) {
+  # Extract migration rate and extinction status from the file name
+  # Assuming file names have a structure like "migration_rate_extinction_status.txt"
+  # Example: "0.05_extinct.txt" or "0.05_survived.txt"
+  file_name <- basename(file)
+  components <- strsplit(file_name, "_")[[1]]
+  
+  # Extract migration rate and extinction status
+  migration_rate <- as.numeric(components[1])  # First part as migration rate
+  extinct <- grepl("extinct", components[2])   # Check if the second part has "extinct"
+
+  # Add to results data frame
+  results <- rbind(results, data.frame(migration_rate = migration_rate, extinction = extinct))
+}
+
+# Summarize extinction counts by migration rate
+summary_table <- aggregate(extinction ~ migration_rate, data = results, FUN = sum)
+
+# Rename columns for clarity
+colnames(summary_table) <- c("Migration Rate", "Extinction Count")
+
+# Print the table
+print(summary_table)
+
+
+
+
+
+```
+
+
+

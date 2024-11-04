@@ -1,13 +1,13 @@
 ---
 title: "Metapopulation Migration/Extinction Model"
 author: "Emma Ochsner and Lena Witschi"
+date: "WORK IN PROGRESS"
 output: html_document
 ---
 
 # Introduction
 
-This is the code for our  Metapopulation Migration/Extinction model. We used SLiM to generate  data and R to then analyze it. We first softcode migration rate in R and how many reps we choose and which rates.
-
+This is the code for our Metapopulation Migration/Extinction model. We used SLiM to generate data and R to then analyze it. We first softcode migration rate in R and how many reps we choose and which rates.
 
 ## Generating Data in SLiM with Parameters from R
 
@@ -44,12 +44,11 @@ for(m in all_m){
 
 ## Reading in and analysing Data
 
-In this R block, we start with reading in the Data we generated before. We then made a data frame to store all the metrics we need to start further analysis. This Data frame is saved as Example_result. 
-We calculate the Heterozygosities within the populations for all ten patches and then fill in the Dataframe. 
+In this R block, we start with reading in the Data we generated before. We then made a data frame to store all the metrics we need to start further analysis. This Data frame is saved as Example_result. We calculate the Heterozygosities within the populations for all ten patches and then fill in the Dataframe.
 
 ```{r eval=FALSE, include=FALSE}
 
-setwd("~/Documents/GitHub/THEE_Practical_Project/WEEK2")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL")
 
 #define the migration rates
 all_m <- c(0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.015, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5)
@@ -119,24 +118,24 @@ write.csv(results_df, "Example_Results.csv", row.names = F)
 
 ```
 
+# Analysis
 
-# Analysis 
-
-Now we read in our result file (Example_results). Since we have different extinction rates, we calculate all our metrics separately for every rate. After calculating the metrics we plot the results. 
+Now we read in our result file (Example_results). Since we have different extinction rates, we calculate all our metrics separately for every rate. After calculating the metrics we plot the results.
 
 ## For e = 0.1
 
-Since the variance is so small, we do not show it in the graph. 
+Since the variance is so small, we do not show it in the graph.
+
 ```{r}
 
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.1")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.1")
 
 #Since we dint want to run the first two chunks, we have to define some values again. 
 all_m <- c(0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.015, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5)
 reps <- 20
 
 ##Read in the csv file
-Example_results0.1 <- read.csv("Example_Results.csv")
+Example_results0.1 <- read.csv("Example_Results_Kopie.csv")
 
 ##calculate the Means over the 10 subpopulations
 row_mean0.1 <- rowMeans(Example_results0.1[,4:13])
@@ -184,16 +183,16 @@ legend("topleft", legend = c("Mean H for Subpopulations", "Mean of all Means"), 
 
 ```
 
-
 ## For e = 0.01
 
 Here we used the same code to generate the plot as before, but with the data for e = 0.01
+
 ```{r}
 
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.01")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.01")
 
 ##Read in the csv file
-Example_results0.01 <- read.csv("Example_Results.csv")
+Example_results0.01 <- read.csv("Example_Results_Kopie.csv")
 
 ##calculate the Means over the 10 subpopulations
 row_mean0.01 <- rowMeans(Example_results0.01[,4:13])
@@ -242,10 +241,10 @@ Here we used the same code to generate the plot as before, but with the data for
 
 ```{r}
 
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.001")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.001")
 
 ##Read in the csv file
-Example_results0.001 <- read.csv("Example_Results.csv")
+Example_results0.001 <- read.csv("Example_Results_Kopie.csv")
 
 ##calculate the Means over the 10 subpopulations
 row_mean0.001 <- rowMeans(Example_results0.001[,4:13])
@@ -290,16 +289,16 @@ legend("topleft", legend = c("Mean H for Subpopulations", "Mean of all Means"), 
 
 ```
 
-
 ## For e = 0.0001
 
 Here we used the same code to generate the plot as before, but with the data for e = 0.001
+
 ```{r}
 
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.0001")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.0001")
 
 ##Read in the csv file
-Example_results0.0001 <- read.csv("Example_Results.csv")
+Example_results0.0001 <- read.csv("Example_Results_Kopie.csv")
 
 ##calculate the Means over the 10 subpopulations
 row_mean0.0001 <- rowMeans(Example_results0.0001[,4:13])
@@ -342,16 +341,15 @@ legend("topleft", legend = c("Mean H for Subpopulations", "Mean of all Means"), 
 
 ```
 
-
-
 ## For e = 0
 
 Here we used the same code to generate the plot as before, but with the data for e = 0
+
 ```{r}
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0")
 
 ##Read in the csv file
-Example_results0 <- read.csv("Example_Results.csv")
+Example_results0 <- read.csv("Example_Results_Kopie.csv")
 
 ##calculate the Means over the 10 subpopulations
 row_mean0 <- rowMeans(Example_results0[,4:13])
@@ -395,20 +393,19 @@ legend("topleft", legend = c("Mean H for Subpopulations", "Mean of all Means"), 
 
 ```
 
-
-We now have 5 plots for the 5 different extinction rates. We will combine them into one plot a bit further down in the R script. 
-
+We now have 5 plots for the 5 different extinction rates. We will combine them into one plot a bit further down in the R script.
 
 # Extinction Probabilities
 
 To be able to say something about the probability of extinction of the metapopulation, we did the following plots:
 
 ## For e = 0.1
+
 ```{r}
 
 #Extinction probability for e = 0.1
 # Define the directory where the files are stored
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.1")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.1")
 
 #create a list where we only have the files of the runs which ended in extinction
 files_ex1 <- list.files(pattern = "slim_muts_output")
@@ -447,11 +444,12 @@ lines(extinctions0.1[,1],extinctions0.1[,2],  lwd = 3, col = adjustcolor("#009E7
 ## For e = 0.01
 
 Here we used the exact same code as before but with the data of e = 0.01
+
 ```{r}
 
 #Extinction probability fpr e = 0.1
 # Define the directory where the files are stored
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.01")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.01")
 
 files_ex1 <- list.files(pattern = "slim_muts_output")
 files_ex <- files_ex1[grepl("extinction", files_ex1)]
@@ -489,11 +487,12 @@ lines(extinctions0.01[,1],extinctions0.01[,2],  lwd = 3, col = adjustcolor("#009
 ## For e = 0.001
 
 Here we used the exact same code as before but with the data of e = 0.001
+
 ```{r}
 
 #Extinction probability fpr e = 0.1
 # Define the directory where the files are stored
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.001")
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e = 0.001")
 
 files_ex1 <- list.files(pattern = "slim_muts_output")
 files_ex <- files_ex1[grepl("extinction", files_ex1)]
@@ -531,11 +530,12 @@ lines(extinctions0.001[,1],extinctions0.001[,2],  lwd = 3, col = adjustcolor("#0
 ## For e = 0.0001
 
 Here we used the exact same code as before but with the data of e = 0.0001
+
 ```{r}
 
 #Extinction probability fpr e = 0.0001
 # Define the directory where the files are stored
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.0001")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.0001")
 
 files_ex1 <- list.files(pattern = "slim_muts_output")
 files_ex <- files_ex1[grepl("extinction", files_ex1)]
@@ -573,9 +573,10 @@ lines(extinctions0.0001[,1],extinctions0.0001[,2],  lwd = 3, col = adjustcolor("
 ## Heterozygosity for all extinction rates
 
 Combining all the graphs which show the Heterozygosity for different Extinction Rates
+
 ```{r}
 
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.1")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.1")
 
 #make the plot
 par(mar=c(6,6,6,6))
@@ -593,32 +594,31 @@ legend("topleft", legend = c("Mean of all Means, e = 0.1", "Mean of all Means, e
 
 
 #to add the other lines, we always have to change the working directory since we saved the files of the different runs in different folders.
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.01")
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e = 0.01")
 points(Example_results0.01$m,Example_results0.01$mean, lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.1))
 lines(result_array0.01[,2],result_array0.01[,1],  lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.7))
 
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.001")
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e = 0.001")
 points(Example_results0.001$m,Example_results0.001$mean, lwd = 3, col = adjustcolor("black", alpha.f = 0.1))
 lines(result_array0.001[,2],result_array0.001[,1],  lwd = 3, col = adjustcolor("black",  alpha.f = 0.7))
 
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.0001")
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e = 0.0001")
 points(Example_results0.0001$m,Example_results0.0001$mean, lwd = 3, col = adjustcolor("skyblue", alpha.f = 0.1))
 lines(result_array0.0001[,2],result_array0.0001[,1],  lwd = 3, col = adjustcolor("skyblue", alpha.f = 0.7))
 
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0")
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e = 0")
 points(Example_results0$m,Example_results0$mean, lwd = 3, col = adjustcolor("blue", alpha.f = 0.1))
 lines(result_array0[,2],result_array0[,1],  lwd = 3, col = adjustcolor("blue", alpha.f = 0.7))
 
 
 ```
 
-
 ## Extinction probability for all extinction rates
 
 ```{r}
 
 # Define the directory where the files are stored 8first for e = 0.1)
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.1")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.1")
 
 #make the plot
 par(mar=c(6,6,6,6))
@@ -632,15 +632,15 @@ points(extinctions0.1[,1],extinctions0.1[,2]/reps, pch = 16, col = "#CC79A7")  #
 lines(extinctions0.1[,1],extinctions0.1[,2]/reps,  lty = 2, col = adjustcolor("#CC79A7", alpha.f = 0.7)) # Add a dashed line connecting the points
 
 #to add the other lines, we always have to change the working directory since we saved the files of the differetn runs in different folders.
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.01")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.01")
 points(extinctions0.01[,1],extinctions0.01[,2]/reps, pch = 16, col = "#009E73")
 lines(extinctions0.01[,1],extinctions0.01[,2]/reps,  lty = 2, col = adjustcolor("#009E73", alpha.f = 0.7))
 
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.001")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.001")
 points(extinctions0.001[,1],extinctions0.001[,2]/reps, pch = 16, col = "black")
 lines(extinctions0.001[,1],extinctions0.001[,2]/reps,  lty = 2, col = adjustcolor("black", alpha.f = 0.7))
 
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.0001")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.0001")
 points(extinctions0.0001[,1],extinctions0.0001[,2]/reps, pch = 16, col = "skyblue")
 lines(extinctions0.0001[,1],extinctions0.0001[,2]/reps,  lty = 2, col = adjustcolor("skyblue", alpha.f = 0.7))
 

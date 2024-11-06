@@ -122,6 +122,35 @@ write.csv(results_df, "Example_Results.csv", row.names = F)
 
 Now we read in our result file (Example_results). Since we have different extinction rates, we calculate all our metrics separately for every rate. After calculating the metrics we plot the results.
 
+## Generating Extinction Files
+
+Since we can not upload all files from our output, we added this chunk. It copies all the extinction files from our original output folder into the final output folder in GitHub. This way, we can stop this code from running when knitting the file, but all analysis / plots work. 
+
+```{r eval=FALSE, include=FALSE}
+#Make a table which only contains the simulations which ended in extinction
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.1")
+files_ex1 <- list.files(pattern = "slim_muts_output")
+files_ex <- files_ex1[grepl("extinction", files_ex1)]
+file.copy(files_ex, "~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.1")
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.01")
+files_ex1 <- list.files(pattern = "slim_muts_output")
+files_ex <- files_ex1[grepl("extinction", files_ex1)]
+file.copy(files_ex, "~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.01")
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.001")
+files_ex1 <- list.files(pattern = "slim_muts_output")
+files_ex <- files_ex1[grepl("extinction", files_ex1)]
+file.copy(files_ex, "~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.001")
+
+setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e=0.0001")
+files_ex1 <- list.files(pattern = "slim_muts_output")
+files_ex <- files_ex1[grepl("extinction", files_ex1)]
+file.copy(files_ex, "~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.0001")
+
+
+```
 ## For e = 0.1
 
 Since the variance is so small, we do not show it in the graph.
@@ -130,7 +159,7 @@ Since the variance is so small, we do not show it in the graph.
 
 setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.1")
 
-#Since we dint want to run the first two chunks, we have to define some values again. 
+#Since we dint want to run the first three chunks, we have to define some values again. 
 all_m <- c(0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.015, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5)
 reps <- 20
 
@@ -492,7 +521,7 @@ Here we used the exact same code as before but with the data of e = 0.001
 
 #Extinction probability fpr e = 0.1
 # Define the directory where the files are stored
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e = 0.001")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.001")
 
 files_ex1 <- list.files(pattern = "slim_muts_output")
 files_ex <- files_ex1[grepl("extinction", files_ex1)]
@@ -594,19 +623,19 @@ legend("topleft", legend = c("Mean of all Means, e = 0.1", "Mean of all Means, e
 
 
 #to add the other lines, we always have to change the working directory since we saved the files of the different runs in different folders.
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e = 0.01")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.01")
 points(Example_results0.01$m,Example_results0.01$mean, lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.1))
 lines(result_array0.01[,2],result_array0.01[,1],  lwd = 3, col = adjustcolor("#009E73", alpha.f = 0.7))
 
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e = 0.001")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.001")
 points(Example_results0.001$m,Example_results0.001$mean, lwd = 3, col = adjustcolor("black", alpha.f = 0.1))
 lines(result_array0.001[,2],result_array0.001[,1],  lwd = 3, col = adjustcolor("black",  alpha.f = 0.7))
 
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e = 0.0001")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0.0001")
 points(Example_results0.0001$m,Example_results0.0001$mean, lwd = 3, col = adjustcolor("skyblue", alpha.f = 0.1))
 lines(result_array0.0001[,2],result_array0.0001[,1],  lwd = 3, col = adjustcolor("skyblue", alpha.f = 0.7))
 
-setwd("~/Documents/GitHub/THEE_Practical_Project/Outputs/e = 0")
+setwd("~/Documents/GitHub/THEE_Practical_Project/FINAL/e = 0")
 points(Example_results0$m,Example_results0$mean, lwd = 3, col = adjustcolor("blue", alpha.f = 0.1))
 lines(result_array0[,2],result_array0[,1],  lwd = 3, col = adjustcolor("blue", alpha.f = 0.7))
 
